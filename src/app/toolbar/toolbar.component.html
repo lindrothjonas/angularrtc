@@ -1,0 +1,19 @@
+<mat-toolbar color="primary" role="header" fxLayout="row" class="primary-toolbar">
+  <div fxFlex="50px">
+    <button type="button" class="menu-btn" mat-icon-button (click)="onMenu()">
+      <mat-icon class="material-icons">menu</mat-icon>
+    </button>
+  </div>
+  <div fxFlex="100px">
+    Recents
+  </div>
+  <div fxFlex fxFill class="search-col">
+    <input type="text" class="search-bar" placeholder="Search..." />
+    <mat-slide-toggle class="pin-toggle"></mat-slide-toggle>
+  </div>
+  <div fxFlex="200px" class="avatar-col">
+    <span class="avatar accent-1 large">
+      JL
+    </span>
+  </div>
+</mat-toolbar> 

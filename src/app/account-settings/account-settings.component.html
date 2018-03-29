@@ -1,0 +1,28 @@
+<div class="new-message-toolbar" mat-dialog-title>
+  <mat-icon>person</mat-icon>
+  <button mat-icon-button mat-dialog-close>
+    <mat-icon>clear</mat-icon>
+  </button>
+</div>
+<mat-dialog-content class="new-message-content">
+  <mat-form-field class="subject-input">
+    <input matInput placeholder="Name" [formControl]="nameCtrl" />
+  </mat-form-field>
+  <mat-form-field class="subject-input">
+    <input matInput placeholder="Key" [formControl]="keyCtrl" />
+  </mat-form-field>
+  <mat-form-field class="subject-input">
+    <input matInput placeholder="Identity" [formControl]="identityCtrl" />
+  </mat-form-field>
+  <mat-form-field class="subject-input">
+    <input matInput placeholder="Secret" [formControl]="secretCtrl" />
+  </mat-form-field>
+  <mat-form-field class="body-input">
+    <textarea matInput placeholder="Description" [formControl]="descriptionCtrl" rows="1"></textarea>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button color="primary" (click)="save()" >
+    Save
+  </button>
+</mat-dialog-actions>

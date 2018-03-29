@@ -1,0 +1,29 @@
+<content>
+  <mat-list>
+    <mat-list-item class="category-title">
+      Today
+    </mat-list-item>
+    <mat-list-item style="height:auto;" *ngFor="let message of messages; let i = index;">
+      <app-message style="width:100%;"
+        [avatar]="message.avatar"
+        [from]="message.from"
+        [subject]="message.subject"
+        [body]="message.body"
+        [recieved]="message.recieved"
+        (removed)="onRemove(i)"
+        (reply)="onNewMessage($event)">
+      </app-message>
+    </mat-list-item>
+  </mat-list>
+</content>
+<button
+  mat-fab
+  color="accent"
+  class="new-fab"
+  (click)="onNewCall()"
+  (mouseenter)="onMouseEnter(true)"
+  (mouseleave)="onMouseEnter(false)"
+  matTooltip="New Call"
+  matTooltipPosition="before">
+  <mat-icon>{{newCallIcon}}</mat-icon>
+</button>

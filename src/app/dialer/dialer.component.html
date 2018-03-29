@@ -1,0 +1,24 @@
+<div class="new-message-toolbar" mat-dialog-title>
+    <mat-icon>{{callIcon}}</mat-icon>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>clear</mat-icon>
+    </button>
+  </div>
+  <mat-dialog-content class="new-message-content">
+    <mat-form-field class="subject-input">
+      <input matInput placeholder="Number to call" [formControl]="numberCtrl" />
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+      <button [class.red]="callButtonIcon != 'call'"
+        mat-fab
+        color="accent"
+        class="newcall-fab"
+        (click)="onCall()"
+        matTooltip={{tooltip}}
+        matTooltipPosition="before"
+        [disabled]="initiating">
+        <mat-icon>{{callButtonIcon}}</mat-icon>
+      </button>
+  </mat-dialog-actions>
+  

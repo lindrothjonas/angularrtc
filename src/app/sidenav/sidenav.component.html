@@ -1,0 +1,40 @@
+<mat-nav-list >
+  <mat-list-item>
+    <button mat-button routerLink="/" routerLinkActive>
+      <mat-icon>inbox</mat-icon>
+      Recents
+    </button>
+  </mat-list-item>
+  <mat-list-item>
+    <button mat-button routerLink="/snoozed" routerLinkActive>
+      <mat-icon class="orange600x">contacts</mat-icon>
+      Contacts
+    </button>
+  </mat-list-item>
+  
+  <mat-divider></mat-divider>
+  <mat-list-item style="height:24px;margin-top:15px;">
+      <mat-icon style="font-size: 18px;">group</mat-icon>
+      <div style="font-size:80%;">
+        Accounts
+      </div>
+      <button mat-icon-button (click)="editAccount()">
+        <mat-icon>add</mat-icon>
+      </button>
+  </mat-list-item>
+  <mat-list-item style="height: 32px" *ngFor="let account of accounts$ | async">
+    <button mat-icon-button class="hide-on-hover">
+      <mat-icon class="account_started">{{!account.active ? "" : "done"}}</mat-icon>
+    </button>
+    <button mat-icon-button class="show-on-hover">
+      <mat-icon (click)="activateAccount(account)" class="account-grey">{{!account.active ? "play_arrow" : "stop"}}</mat-icon>
+    </button>
+    <span matTooltip="{{account.description}}" style="width:70px;font-size:90%;">{{account.name}}</span>
+    <button mat-icon-button (click)="editAccount(account)" matTooltip="edit" >
+      <mat-icon class="account-grey">settings</mat-icon>
+    </button>
+    <button mat-icon-button (click)="removeAccount(account.id)" matTooltip="delete" >
+      <mat-icon class="account-grey">delete</mat-icon>
+    </button>
+  </mat-list-item>
+</mat-nav-list>

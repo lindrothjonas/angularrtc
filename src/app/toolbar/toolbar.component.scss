@@ -1,0 +1,156 @@
+$search-bar-bg: #6097f6;
+$search-bar-color: #FFF;
+
+$avatar-bg: #7b1fa2;
+$avatar-color: #FFF;
+
+.sidenav-nav {
+  width: 250px;
+  padding: 5px;
+
+  mat-list,
+  mat-list-item,
+  mat-list-item button {
+    display: block;
+    width: 100%;
+  }
+  
+  mat-list-item {
+    button {
+      text-align: left;
+      padding: 10px 20px;
+      color: #656565;
+    }
+  
+    mat-icon {
+      margin-right: 10px;
+    }
+  }
+  
+}
+
+.sidenav-content {
+  height: 100%;
+}
+
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav-list {
+  width: 180px;
+  height: 100%;
+}
+
+.primary-toolbar {
+  transition: background .15s;
+  box-shadow: 0 0 4px rgba(0,0,0,.14), 0 4px 8px rgba(0,0,0,.28);
+  z-index: 2;
+}
+
+content {
+  display: block;
+  width: 85%;
+  margin: 15px auto;
+  font-size: 90%;
+  height: 100%;
+}
+
+hr {
+  border-top: solid 1px #616161;
+  border-bottom: none;
+}
+
+.new-fab.mat-fab {
+  position: absolute;
+  right: 25px;
+  bottom: 25px;
+}
+
+.search-col {
+  line-height: 62px;
+  text-align: center;
+}
+
+.search-bar {
+  background: $search-bar-bg;
+  border-radius: 2px;
+  min-width: 144px;
+  outline: none;
+  color: $search-bar-color;
+  border: none;
+  height: 38px;
+  line-height: 38px;
+  width: 100%;
+  padding: 0 30px;
+  font-weight: 100;
+  font-size: 80%;
+  max-width: 550px;
+  margin: 0 auto;
+
+  &::placeholder {
+    color: $search-bar-color;
+  }
+
+  &::before {
+    box-shadow: inset -24px 0 12px -12px #898984;
+    transition: box-shadow .15s;
+  }
+}
+
+.mat-toolbar-layout {
+  width: 100%;
+}
+
+.pin-toggle {
+  margin-left: 10px;
+}
+
+.avatar {
+  display: inline-block;
+  border-radius: 50%;
+  height: 28px;
+  width: 28px;
+  color: $avatar-color;
+  text-align: center;
+  line-height: 28px;
+  font-size: 12px;
+  background: $avatar-bg;
+  
+  &.large {
+    height: 32px;
+    width: 32px;
+    line-height: 32px;
+  }
+}
+
+.avatar-col {
+  text-align: right;
+}
+
+.material-icons.orange600 
+{ 
+  color: #FB8C00; 
+}
+
+.example-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.mat-drawer-backdrop.mat-drawer-shown{
+  background-color: transparent !important;
+}
+
+.mat-drawer {
+  background-color: #f6f6f6;
+}
+
+.mat-drawer-container {
+  background-color: #f6f6f6;
+}

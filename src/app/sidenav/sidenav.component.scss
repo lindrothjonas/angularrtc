@@ -1,0 +1,54 @@
+.app-sidenav-container {
+    /* When the sidenav is not fixed, stretch the sidenav container to fill the available space. This
+       causes `<mat-sidenav-content>` to act as our scrolling element for desktop layouts. */
+    flex: 1;
+    height: 100%;
+    
+  }
+  
+  .example-is-mobile .example-sidenav-container {
+    /* When the sidenav is fixed, don't constrain the height of the sidenav container. This allows the
+       `<body>` to be our scrolling element for mobile layouts. */
+    flex: 1 0 auto;
+  }
+
+  .material-icons.account_started  
+  { 
+    color: #00AA00; 
+  }
+
+  mat-list-item:hover .hide-on-hover {
+    display:none;
+  }
+
+  mat-list-item .show-on-hover {
+    display:none;
+  }
+  mat-list-item:hover .show-on-hover {
+    display:block;
+  }
+
+  .material-icons.account-grey  
+  { 
+    color:transparent;
+    font-size: 18px;
+  }
+  mat-list-item:hover .material-icons.account-grey  
+  { 
+    color:#bebebe;
+    font-size: 18px;
+  }
+
+  mat-icon:hover .material-icons.account-grey  
+  { 
+    color:#bebebe;
+    font-size: 18px;
+  }
+
+  .mat-icon-button {
+    width:32px;
+    
+  }
+
+  
+
