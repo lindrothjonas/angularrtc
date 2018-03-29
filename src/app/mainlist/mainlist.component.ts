@@ -16,7 +16,7 @@ export class MainlistComponent implements OnInit {
   messages = messages;
   private callDialogOpen:boolean = false;
   private dialogRef:MatDialogRef<DialerComponent>;
-  private newCallIcon:string = "add";
+  public newCallIcon:string = "add";
   constructor(private snackBar: MatSnackBar,
     private dialog: MatDialog) { }
 

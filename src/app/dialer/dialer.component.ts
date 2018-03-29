@@ -11,11 +11,11 @@ import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDi
 })
 export class DialerComponent implements OnInit {
   numberCtrl = new FormControl();
-  private call:Call;
-  private callIcon:string = "call_end";
-  private callButtonIcon:string = "call";
-  private tooltip:string = "Call";
-  private initiating:boolean = false;
+  public call:Call;
+  public callIcon:string = "call_end";
+  public callButtonIcon:string = "call";
+  public tooltip:string = "Call";
+  public initiating:boolean = false;
   constructor(private sinchService:SinchService, private zone: NgZone, private dialogRef:MatDialogRef<DialerComponent>) { 
 
   }

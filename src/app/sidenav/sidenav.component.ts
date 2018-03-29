@@ -20,7 +20,7 @@ export class SidenavComponent implements OnInit {
   @ViewChild('sidenav') sidenav; 
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
-  private accounts$:Observable<Account[]>;
+  public accounts$:Observable<Account[]>;
   private accounts:Account[];
   private account:Account;
   constructor(private snackBar: MatSnackBar,

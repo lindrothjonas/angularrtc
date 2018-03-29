@@ -14,7 +14,10 @@ declare var SinchClient: any;
 
 export class SinchModule {
   private sinchClient: any;
-  constructor(applicationKey:string, configuration: Configuration) {
+  constructor() {
+    
+  }
+  init(applicationKey:string, configuration: Configuration) {
     this.sinchClient = new SinchClient({
       applicationKey: applicationKey,
       capabilities: {calling: true, video: true},
@@ -23,7 +26,6 @@ export class SinchModule {
         console.log(message);
       },
     });
-    
   }
   
   start(authTicket:any):Promise<any> {

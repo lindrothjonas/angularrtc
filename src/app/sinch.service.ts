@@ -50,7 +50,8 @@ export class SinchService {
   start(accountId:string = null):Observable<any> {
     return new Observable((observable) => {
       this.accountService.getAccount(accountId).subscribe((account) => {
-        this.sinch = new SinchModule(account.key, account.configuration);
+        this.sinch = new SinchModule();
+        this.sinch.init(account.key, account.configuration);
         this.sinch.signIn(account.identity, account.secret)
         .then(() => { 
           this.activateAccount(account, true).subscribe(() => {
