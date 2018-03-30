@@ -27,6 +27,9 @@ export class AccountService {
     if (account.id == null) {
       account.id = UUID.UUID();
     }
+    if (this.accounts == null) {
+      this.accounts = new Map<string, Account>();
+    }
     this.accounts.set(account.id, account);
     this.subject$.next(Array.from(this.accounts.values()));
     return this.localStorage.setItem('accounts', this.accounts).pipe(tap( () => {}), catchError((err1, err2) => { console.log(err1);return null}));
@@ -59,7 +62,7 @@ export class AccountService {
       } else {
         this.localStorage.getItem('accounts').pipe().subscribe((accounts) => 
           { 
-            this.accounts = accounts;
+            this.accounts = accounts == null ? new Map<string, Account>() : accounts;
             
             observable.next(Array.from(this.accounts.values())) 
             //observable.complete();
