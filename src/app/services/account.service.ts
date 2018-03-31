@@ -11,16 +11,9 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 export class AccountService {
   accounts: Map<string, Account>;
   observer: Observable<Account[]>
-  subject$: BehaviorSubject<Account[]>
   uuid: string = UUID.UUID();
   constructor(protected localStorage: AsyncLocalStorage) { 
-    /*this.observer = new Observable<Account[]>( (observer) => localStorage.getItem("accounts").subscribe( (accounts) => {
-      observer.next(Array.from(accounts.values()));
-    } ) )*/
-    this.subject$ = new BehaviorSubject<Account[]>([])
-    this.localStorage.getItem("accounts").subscribe( (accounts) => {
-      //this.subject$.next(Array.from(accounts.values()));
-    })
+    
   }
 
   setAccount (account:Account):Observable<any> {
@@ -31,7 +24,6 @@ export class AccountService {
       this.accounts = new Map<string, Account>();
     }
     this.accounts.set(account.id, account);
-    this.subject$.next(Array.from(this.accounts.values()));
     return this.localStorage.setItem('accounts', this.accounts).pipe(tap( () => {}), catchError((err1, err2) => { console.log(err1);return null}));
   }
 
@@ -48,10 +40,6 @@ export class AccountService {
         //observable.complete();
       });
     });
-  }
-
-  getObservable():BehaviorSubject<Account[]> {
-    return this.subject$;
   }
 
   getAccounts():Observable<Account[]> {
