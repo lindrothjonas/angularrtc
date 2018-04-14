@@ -10,7 +10,7 @@
     </mat-form-field>
   </mat-dialog-content>
   <mat-dialog-actions>
-      <button [class.red]="callButtonIcon != 'call'"
+      <button [class.hide]="(call != null && outgoing) || (call != null && call.getState() == 'ESTABLISHED')"
         mat-fab
         color="accent"
         class="newcall-fab"
@@ -18,7 +18,18 @@
         matTooltip={{tooltip}}
         matTooltipPosition="before"
         [disabled]="initiating">
-        <mat-icon>{{callButtonIcon}}</mat-icon>
+        <mat-icon>call</mat-icon>
+      </button>
+      <button [class.red]="true"
+        [class.hide]="call == null"
+        mat-fab
+        color="accent"
+        class="newcall-fab"
+        (click)="onHangup()"
+        matTooltip="Hangup"
+        matTooltipPosition="before"
+        [disabled]="initiating">
+        <mat-icon>call_end</mat-icon>
       </button>
   </mat-dialog-actions>
   

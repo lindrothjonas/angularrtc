@@ -26,8 +26,8 @@
     <button mat-icon-button class="hide-on-hover">
       <mat-icon class="account_started">{{!account.active ? "" : "done"}}</mat-icon>
     </button>
-    <button mat-icon-button class="show-on-hover">
-      <mat-icon (click)="activateAccount(account)" class="account-grey">{{!account.active ? "play_arrow" : "stop"}}</mat-icon>
+    <button mat-icon-button class="show-on-hover" (click)="activateAccount(account)">
+      <mat-icon class="account-grey">{{!account.active ? "play_arrow" : "stop"}}</mat-icon>
     </button>
     <span matTooltip="{{account.description}}" style="width:70px;font-size:90%;">{{account.name}}</span>
     <button mat-icon-button (click)="editAccount(account)" matTooltip="edit" >

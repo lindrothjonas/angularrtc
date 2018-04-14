@@ -16,6 +16,7 @@ import { AccountService } from './services/account.service'
 import { AsyncLocalStorageModule } from 'angular-async-local-storage'
 import { AccountSettingsComponent } from './account-settings/account-settings.component';
 import { DialerComponent } from './dialer/dialer.component';
+import { CallingService } from './services/calling.service';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,7 @@ import { DialerComponent } from './dialer/dialer.component';
     AccountSettingsComponent,
     DialerComponent
   ],
-  providers: [AccountService, SinchService,  ],
+  providers: [AccountService, SinchService, CallingService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

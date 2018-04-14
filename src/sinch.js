@@ -3680,7 +3680,7 @@ code.google.com/p/crypto-js/wiki/License
 (function(){var h=CryptoJS,j=h.lib.WordArray;h.enc.Base64={stringify:function(b){var e=b.words,f=b.sigBytes,c=this._map;b.clamp();b=[];for(var a=0;a<f;a+=3)for(var d=(e[a>>>2]>>>24-8*(a%4)&255)<<16|(e[a+1>>>2]>>>24-8*((a+1)%4)&255)<<8|e[a+2>>>2]>>>24-8*((a+2)%4)&255,g=0;4>g&&a+0.75*g<f;g++)b.push(c.charAt(d>>>6*(3-g)&63));if(e=c.charAt(64))for(;b.length%4;)b.push(e);return b.join("")},parse:function(b){var e=b.length,f=this._map,c=f.charAt(64);c&&(c=b.indexOf(c),-1!=c&&(e=c));for(var c=[],a=0,d=0;d<
 e;d++)if(d%4){var g=f.indexOf(b.charAt(d-1))<<2*(d%4),h=f.indexOf(b.charAt(d))>>>6-2*(d%4);c[a>>>2]|=(g|h)<<24-8*(a%4);a++}return j.create(c,a)},_map:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="}})();
 ;(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SinchClient = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-VERSION = ["1.4.7-15-gcd46ba8-dirty","1.4.7","15","cd46ba8","-dirty"]; exports.version = VERSION;
+VERSION = ["1.4.7-9-g27003dd-dirty","1.4.7","9","27003dd","-dirty"]; exports.version = VERSION;
 },{}],2:[function(require,module,exports){
 (function (Buffer){
 (function () {
@@ -10195,9 +10195,14 @@ function Call(sinch, videoSupport, callId) {
 	this.callOutbound = undefined;
 	this.fromId = '';
 	this.toId = '';
-	this.webRtcConfig = {"iceServers": [{"urls": ["stun:23.21.150.121", "stun:stun.l.google.com:19302"]}]};
+	if(!this.sinch.firefox) { //Firefox defaults to mozilla's servers
+        this.webRtcConfig = {"iceServers": [{"urls": ["stun:23.21.150.121", "stun:stun.l.google.com:19302"]}]};
+	}
+	else { // TODO: Verify this works better
+        this.webRtcConfig = {"iceServers": [{"urls": ["stun:23.21.150.121", "stun:stun.l.google.com:19302"]}]};
+	}
 
-	// MANUAL Certification generation on newer Chrome and FF for compatibility 
+	// ** MANUAL Certification generation on newer Chrome and FF for compatibility **//
 	var rawCh = navigator.userAgent.match(/Chrom[e|ium]\/([0-9]+)\./);
 	var chromeV = rawCh ? parseInt(rawCh[1], 10) : false;
 	var rawFF = navigator.userAgent.match(/Firefox\/([0-9]+)\./);
@@ -10216,7 +10221,9 @@ function Call(sinch, videoSupport, callId) {
 	}
 
 	this.outgoingStream = undefined;
+	this.outgoingStreamURL = undefined;
 	this.incomingStream = undefined;
+	this.incomingStreamURL = undefined;
 	this.earlymedia = undefined;
 
 	this.callState = CallState.INITIATING;
@@ -10322,7 +10329,7 @@ function Call(sinch, videoSupport, callId) {
  *		onProgressing: function(call): { console.log('Call is progressing'); },
  *		onEstablished: function(call): { 
  * 			console.log('Call is established, hook up audio.');
- *			$('audio').attr('srcObject', call.incomingStream); //Ensure audio element has "autoplay" attribute set
+ *			$('audio').attr('src', call.incomingStreamURL); //Ensure audio element has "autoplay" attribute set
  *		},
  *		onCallEnded: function(call): { console.log('Call is ended, cause:', call.getEndCause()); }
  *	}
@@ -10356,6 +10363,7 @@ Call.prototype.removeEventListener = function(eventListener) {
  */
 Call.prototype.setStream = function(outgoingStream) {
 	this.outgoingStream = outgoingStream;
+	this.outgoingStreamURL = window.URL.createObjectURL(outgoingStream);
 
 	//NOTE: For desired functionality - add a stream after PC has been created + negotiated, the negotiation needs to be done AGAIN
 	//THIS IS NOT ENOUGH. Temporary solution - force API to require media on start.
@@ -10472,7 +10480,8 @@ Call.prototype.establish = function() {
 			this.unmute();
 
 			//Hook up audiostreams
-			this.incomingStream = this.pc.getReceivers()[0]; //Save the new stream in this object
+            this.incomingStream = this.pc.getRemoteStreams()[0]; //Save the new stream in this object
+            this.incomingStreamURL = window.URL.createObjectURL(this.incomingStream);
 		}
 
 		//Log when state changed to ESTABLISHED
@@ -11275,7 +11284,7 @@ Call.prototype.addEventListenerPrototype = function(eventListeners) {
  * @return undefined
  */
 Call.prototype.initPC = function(instanceId) {
-	var newPc = new PeerConnection(this.webRtcConfig, {optional: [{DtlsSrtpKeyAgreement: false}]});
+	var newPc = new PeerConnection(this.webRtcConfig, {optional: [{DtlsSrtpKeyAgreement: true}]});
 
 	if(this.outgoingStream && this.callDomain != 'connection') { // Connection datastreams should never have outgoingStream set prior to init of PC
 		//Default to disabled, these are unmuted when call is established. 
@@ -11508,31 +11517,6 @@ Call.prototype.initPC = function(instanceId) {
 	return deferred.promise; 
  }
 
- Call.prototype.updateSdp = function(sdp) {
-	//remove line starting with 'a=crypto:1'from sdp
-    var sdpLines = sdp.split('\n');
-    var updatedSdp = '';
-    var bundle = false;
-    var mid = false;
-    for (var i = 0; i < sdpLines.length; ++i) {
-        if (sdpLines[i].length > 0 && !sdpLines[i].startsWith('a=crypto:1')) {
-            updatedSdp = updatedSdp + sdpLines[i] + '\n';
-        }
-        if (sdpLines[i].length > 0 && sdpLines[i].startsWith('a=mid:')) {
-            mid= true;
-        }
-        if (sdpLines[i].length > 0 && sdpLines[i].startsWith('a=group:BUNDLE')) {
-            bundle = true;
-        }
-    }
-    if (!bundle) {
-        updatedSdp = updatedSdp + 'a=group:BUNDLE audio\n';
-    }
-    if (!mid) {
-        updatedSdp = updatedSdp + 'a=mid:audio\n';
-    }
-	return updatedSdp;
-}
 
 /**
  * Internal: Recieve a call, do not use this directly! Only used internally.
@@ -11565,7 +11549,7 @@ Call.prototype.ackIncomingCall = function(msgObj) {
 	
 	//Create RTC description based on Offer
 	var sdpObj = JSON.parse(msgObj.decrypted.nvps.sdp);
-	sdpObj.sdp = this.updateSdp(sdpObj.sdp);
+
 	//Start of SDP Offer processing
 	this.sinch.log(new Notification(0, 1, 'Received SDP offer from B', sdpObj));
 
@@ -11592,7 +11576,7 @@ Call.prototype.ackIncomingCall = function(msgObj) {
 				this.progress(false); 
 
 				//TODO: Remove when Firefox supports proper WebRTC reuse of local offers across peer connections
-				/*if(this.sinch.firefox) {
+				if(this.sinch.firefox) {
 					var fakeCandidate = {
 						candidate: 'candidate:123123 1 UDP 1 127.0.0.1 3000 typ host',
 						sdpMLI: 0,
@@ -11613,7 +11597,7 @@ Call.prototype.ackIncomingCall = function(msgObj) {
 							this.pc.addIceCandidate(new IceCandidate(fakeCandidate), function() {}, function() {});
 						}.bind(this), 15000);
 					this.pc.addIceCandidate(new IceCandidate(fakeCandidate), function() {}, function() {});					
-				}*/
+				}
 
 				//Option 1, this is a new client: Send Answer in Ack
 				if(msgObj.decrypted.nvps.p2p == 'yes') {
@@ -12055,8 +12039,8 @@ CallClient.prototype.initStream = function(customStream, disableVideo) {
 		if (navigator.mediaDevices) {
 			navigator.mediaDevices.getUserMedia({video: videoSupport , audio: true})
 				.then(function(stream) {
-                    this.localMediaStream = stream;
-                    deferred.resolve(this.localMediaStream);
+					this.localMediaStream = stream;
+					deferred.resolve(this.localMediaStream);
 				})
 				.catch(function(error) {
 					console.error('Error retrieving media stream', error);
@@ -12177,7 +12161,7 @@ CallClient.prototype.handleIncomingCall = function (msgObj) {
  *	var callListener = {
  *		onProgressing: function(call): { }, //Call is progressing
  *		onEstablished: function(call): { //Call is established
- *			$('audio').attr('srcObject', call.incomingStream); //Add audio stream to audio element.
+ *			$('audio').attr('src', call.incomingStreamURL); //Add audio stream to audio element.
  * 			//NOTE: Remember to ensure audio element play back audio or has the "autoplay" attribute (see sample app)
  *		},
  *		onCallEnded: function(call): { } //Call is ended
@@ -12226,7 +12210,7 @@ CallClient.prototype.callUser = function (userId, headers, customStream) {
  *	var callListener = {
  *		onProgressing: function(call): { }, //Call is progressing
  *		onEstablished: function(call): { //Call is established
- *			$('audio').attr('srcObject', call.incomingStream); //Add audio stream to audio element.
+ *			$('audio').attr('src', call.incomingStreamURL); //Add audio stream to audio element.
  * 			//NOTE: Remember to ensure audio element play back audio or has the "autoplay" attribute (see sample app)
  *		},
  *		onCallEnded: function(call): { } //Call is ended
@@ -12322,7 +12306,7 @@ CallClient.prototype.connect = function (userId, headers) {
  *	var callListener = {
  *		onProgressing: function(call): { }, //Call is progressing
  *		onEstablished: function(call): { //Call is established
- *			$('audio').attr('srcObject', call.incomingStream); //Add audio stream to audio element.
+ *			$('audio').attr('src', call.incomingStreamURL); //Add audio stream to audio element.
  * 			//NOTE: Remember to ensure audio element play back audio or has the "autoplay" attribute (see sample app)
  *		},
  *		onCallEnded: function(call): { } //Call is ended
@@ -12377,7 +12361,7 @@ CallClient.prototype.callPhoneNumber = function(phoneNumber, headers, customStre
  *	var callListener = {
  *		onProgressing: function(call): { }, //Call is progressing
  *		onEstablished: function(call): { //Call is established
- *			$('audio').attr('srcObject', call.incomingStream); //Add audio stream to audio element.
+ *			$('audio').attr('src', call.incomingStreamURL); //Add audio stream to audio element.
  * 			//NOTE: Remember to ensure audio element play back audio or has the "autoplay" attribute (see sample app)
  *		},
  *		onCallEnded: function(call): { } //Call is ended
@@ -12428,13 +12412,13 @@ CallClient.prototype.callConference = function(conferenceId, headers, customStre
  *
  *	groupCall.addEventListener({
  *		onGroupLocalMediaAdded: function(stream) { // Local media stream is available for consumption
- *			$('video#me').attr('srcObject', stream);
+ *			$('video#me').attr('src', window.URL.createObjectURL(stream));
  *		},
  *		onGroupRemoteCallAdded: function(call) { // A new participant is ready
- *			$('video#other').attr('srcObject', call.incomingStream);
+ *			$('video#other').attr('src', call.incomingStreamURL);
  * 		}, 
  *		onGroupRemoteCallRemoved: function(call) {
- *			$('video#other').attr('srcObject', '');
+ *			$('video#other').attr('src', '');
  *		},
  *	})
  */
@@ -12569,8 +12553,8 @@ var CallHelper = function() {};
 
 //Undocumented function to generate ICE candidate from proxy URL
 CallHelper.generateIceCandidate = function(host, port) {
-	return 'candidate:' + '2222'+' 1 UDP 2130706431 ' + //TODO: Priority number same as what's generated by backend. Modify later?
-						host + ' ' + port + " typ relay raddr 0.0.0.0 rport 0 generation 0\r\n";
+	return 'a=candidate:' + Math.random().toString(36).substring(5)+' 1 UDP 2130706431 ' + //TODO: Priority number same as what's generated by backend. Modify later?
+						host + ' ' + port + " typ relay\r\n";
 }
 
 /*this.temporaryIceCand = 'a=candidate:' + Math.random().toString(36).substring(5)+' 1 UDP 2130706431 ' + 

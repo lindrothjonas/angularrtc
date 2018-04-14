@@ -10,6 +10,8 @@
       "assets": [
         "assets",
         "favicon.ico",
+        "ringtone.wav",
+        "progresstone.wav",
         {
           "glob": "web.config",
           "input": "./",

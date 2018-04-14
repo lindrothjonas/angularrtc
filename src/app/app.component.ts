@@ -4,6 +4,7 @@ import {ChangeDetectorRef, ViewChild, OnInit } from '@angular/core';
 import { SinchService } from './sinch.service'
 import { AccountService } from './services/account.service'
 import { AsyncLocalStorage } from 'angular-async-local-storage'
+import { CallingService } from './services/calling.service';
 
 @Component({
   selector: 'app-root',
@@ -13,14 +14,18 @@ import { AsyncLocalStorage } from 'angular-async-local-storage'
 })
 export class AppComponent {
   @ViewChild('sidenav') sidenav; 
+  @ViewChild('toneplayer') toneplayer;
   title = 'app';
   mobileQuery: MediaQueryList;
+  audio:HTMLAudioElement;
   private _mobileQueryListener: () => void;
-  constructor(changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, sinchService: SinchService) {
+  constructor(changeDetectorRef: ChangeDetectorRef, 
+              media: MediaMatcher, 
+              private sinchService: SinchService, 
+              private callingService: CallingService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
-    
   }
 
   ngOnDestroy(): void {
@@ -28,7 +33,8 @@ export class AppComponent {
   }
 
   ngOnInit(): void {
-    this.sidenav.opened = true;   
+    this.sidenav.opened = true;
+    this.callingService.init(this.toneplayer.nativeElement, "ringtone.wav","progresstone.wav");
   }
 
   toolbarEvent(event: any) {

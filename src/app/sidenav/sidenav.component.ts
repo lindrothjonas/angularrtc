@@ -11,6 +11,7 @@ import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDi
 import { AccountSettingsComponent } from '../account-settings/account-settings.component'
 import { SinchService } from '../sinch.service';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+
 @Component({
   selector: 'app-sidenav',
   templateUrl: './sidenav.component.html',
@@ -26,7 +27,9 @@ export class SidenavComponent implements OnInit {
   constructor(private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef, 
-    media: MediaMatcher, private accountService:AccountService, private sinchService:SinchService) {
+    media: MediaMatcher, 
+    private accountService:AccountService, 
+    private sinchService:SinchService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
@@ -41,6 +44,7 @@ export class SidenavComponent implements OnInit {
     this.accounts$ = this.accountService.getAccounts();
     this.sinchService.startActive().subscribe((account) => {
       this.account = account;
+      
     });
   }
 

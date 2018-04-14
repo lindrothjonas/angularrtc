@@ -15,24 +15,33 @@ declare var SinchClient: any;
 export class SinchModule {
   private sinchClient: any;
   constructor() {
-    
+
   }
+  
   init(applicationKey:string, configuration: Configuration) {
     this.sinchClient = new SinchClient({
       applicationKey: applicationKey,
       capabilities: {calling: true, video: true},
-      supportActiveConnection: configuration ? configuration.supportActiveConnection : false,
+      supportActiveConnection: configuration ? configuration.supportActiveConnection : true,
       onLogMessage: function(message) {
         console.log(message);
       },
     });
   }
   
+  setUrls(urls:Urls) {
+    this.sinchClient.setUrls(urls);
+  }
+
+  getSession():Session {
+    return this.sinchClient.getSession();
+  }
+
   start(authTicket:any):Promise<any> {
     return this.sinchClient.start(authTicket);
   }
 
-  stop():void {
+  terminate():void {
     this.sinchClient.terminate();
   }
 
@@ -46,6 +55,9 @@ export class SinchModule {
   getCallClient():CallClient {
     return new CallClient(this.sinchClient.getCallClient());
   }
+  startActiveConnection():Promise<void> {
+    return this.sinchClient.startActiveConnection();
+  }
 }
 
 export class CallClient {
@@ -54,7 +66,19 @@ export class CallClient {
   }
   callPhoneNumber(number:string):Call {
     return new Call(this.callClient.callPhoneNumber(number));
-  } 
+  }
+
+  callUser(user:string, headers:any = null, customStream:any = null):Call {
+    return new Call(this.callClient.callUser(user, headers));
+  }
+
+  incomingCallObserver():Observable<Call> {
+    return new Observable<Call>((observer) => {
+    this.callClient.addEventListener( { onIncomingCall : function(call) {
+                                        observer.next(new Call(call))
+                                      }});
+    })
+  }
 }
 
 export class Call {
@@ -62,7 +86,18 @@ export class Call {
     
   }
   hangup() {
-    this.call.hangup();
+    this.call.hangup()
+  }
+  answer():void {
+    this.call.answer()
+  }
+  streamUrl():string {
+    return this.call.incomingStreamURL
+  }
+
+  getState():string {
+    return this.call.getState();
+    
   }
   callEvents():Observable<string> {
     return new Observable<string>((observer) => {
@@ -82,3 +117,23 @@ export enum CallEvent {
   Established,
   Ended
 }
+
+export class Urls {
+  public user:string
+	public base:string
+	public portal:string
+	public reporting:string
+	public reporting_v2:string
+	public calling:string
+	public messaging:string
+	public verification:string
+}
+
+export class Session {
+  public userId:string
+  public sessionId:string
+  public sessionSecret:string
+  public pushNotificationDisplayName:string
+  
+}
+

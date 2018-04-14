@@ -4,6 +4,9 @@ import { FormControl } from '@angular/forms';
 import { ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialog, MatSnackBar, MatDialogRef } from '@angular/material';
 import { DialerComponent } from '../dialer/dialer.component';
+import { SinchService } from '../sinch.service';
+import { CallingService } from '../services/calling.service';
+import { Call } from '../rtc/sinch/sinch.module';
 
 
 @Component({
@@ -18,16 +21,26 @@ export class MainlistComponent implements OnInit {
   private dialogRef:MatDialogRef<DialerComponent>;
   public newCallIcon:string = "add";
   constructor(private snackBar: MatSnackBar,
-    private dialog: MatDialog) { }
+    private dialog: MatDialog, 
+    private sinchService:SinchService, private callingService:CallingService) { }
 
   ngOnInit() {
+    this.callingService.incomingCallEvent().subscribe((call) => {
+      if (this.callDialogOpen) {
+        this.dialogRef.close(false);
+        this.callDialogOpen = false;
+      }
+      this.onNewCall(call);
+    });
   }
+
   onMouseEnter(entered:boolean) {
     this.newCallIcon = entered ? "call" : "add"
   }
-  onNewCall(destination, domain) {
+  onNewCall(call:Call) {
     if (this.callDialogOpen) {
       this.dialogRef.close(false);
+      this.callDialogOpen = false;
       return;
     }
     this.dialogRef = this.dialog.open(DialerComponent, {
@@ -35,7 +48,7 @@ export class MainlistComponent implements OnInit {
       height: '480px',
       panelClass: 'dialer-dialg',
       hasBackdrop:false,
-      data: { destination, domain }
+      data: call
     });
     this.callDialogOpen = true;
     this.dialogRef.afterClosed().subscribe(result => {

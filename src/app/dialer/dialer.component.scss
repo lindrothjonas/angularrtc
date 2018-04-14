@@ -42,13 +42,19 @@ $toolbar-color: #FFF;
 
 .newcall-fab.mat-fab {
     background-color: green;
-    left: 125px;
     top: 240px;
+    margin-left: auto;
+    margin-right: auto;
 }
 .red.mat-fab {
   background-color: red;
-  left: 125px;
+  margin-left: auto;
+  margin-right: auto;
   top: 240px;
+}
+
+.hide.mat-fab {
+  display: none;
 }
 
 .dialer-dialog {
