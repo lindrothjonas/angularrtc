@@ -1,8 +1,8 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialogRef } from '@angular/material';
-import { AccountService} from '../services/account.service'
 import { Account, Configuration, AccountType } from '../rtc/sinch/configuration';
+import { AccountModule } from '../database/account/account.module';
 
 @Component({
   selector: 'app-account-settings',
@@ -17,7 +17,7 @@ export class AccountSettingsComponent implements OnInit {
   secretCtrl = new FormControl();
   constructor(@Inject(MAT_DIALOG_DATA) public data: Account, 
               private dialogRef:MatDialogRef<AccountSettingsComponent>,
-              private accountService:AccountService) { 
+              private accountModule:AccountModule) { 
     if (this.data) {
       this.nameCtrl.setValue(this.data.name);
       this.descriptionCtrl.setValue(this.data.description);
@@ -41,9 +41,8 @@ export class AccountSettingsComponent implements OnInit {
       this.nameCtrl.value,
       this.descriptionCtrl.value,
       this.data.id);
-    data.active = false;
-
-    this.accountService.setAccount(data).subscribe(() => this.dialogRef.close(true));
+    data.active = this.data.active;
+    this.accountModule.set(data).subscribe(() => this.dialogRef.close(true));
     
   }
 }

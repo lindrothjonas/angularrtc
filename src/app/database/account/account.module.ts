@@ -1,8 +1,9 @@
-import { NgModule } from '@angular/core';
+import { NgModule, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AccountService } from '../../services/account.service';
+import { LocalStorageService } from '../../services/localstorage.service';
 import { Account, AccountType, Configuration } from '../../rtc/sinch/configuration'
 import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
 
 @NgModule({
   imports: [
@@ -10,14 +11,30 @@ import { Observable } from 'rxjs/Observable';
   ],
   declarations: []
 })
+@Injectable()
 export class AccountModule { 
-  constructor(private accountService:AccountService) {
-
+  private table:string = "accounts"
+  constructor(private accountService:LocalStorageService) { 
   }
 
-  set(account:Account):Observable<any> {
-    return this.accountService.setAccount(account);
+  public set(account:Account):Observable<any> {
+    return this.accountService.set(this.table, account);
   }
 
+  public remove(id:string):Observable<any> {
+    return this.accountService.remove(this.table, id);
+  }
 
+  public get(id:string):Observable<Account> {
+    return this.accountService.get(this.table, id);
+  }
+
+  public getAll():Observable<Account[]> {
+    return this.accountService.getAll(this.table);
+  }
+
+  public getData():Observable<Account[]> {
+    return this.accountService.getData(this.table)
+  }
+  
 }

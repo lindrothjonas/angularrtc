@@ -11,7 +11,7 @@
           </span>
         </div>
         <div fxFlex="20%" [fxShow]="!opened">
-          {{from}}
+          {{destination}}
         </div>
         <div fxFlex fxFill class="message-subject">
           {{subject}}
@@ -32,7 +32,7 @@
               <mat-icon>call</mat-icon>
               Voice
             </button>
-            <button mat-menu-item>
+            <button mat-menu-item (click)="onCall">
               <mat-icon>video_call</mat-icon>
               Video
             </button>
@@ -41,10 +41,10 @@
               Message
             </button>
           </mat-menu>
-          <button mat-icon-button (click)="removed.emit()" matTooltip="Call" matTooltipPosition="above">
+          <button mat-icon-button (click)="call.emit(destination)" matTooltip="Call" matTooltipPosition="above">
               <mat-icon>call</mat-icon>
           </button>
-          <button mat-icon-button (click)="removed.emit()" matTooltip="Delete" matTooltipPosition="above">
+          <button mat-icon-button (click)="removed.emit(destination)" matTooltip="Delete" matTooltipPosition="above">
             <mat-icon>delete</mat-icon>
           </button>
           
@@ -59,16 +59,16 @@
         </div>
         <div fxFlex>
           <div class="message-body-toolbar">
-            <span class="message-from">{{from}}</span> <span class="message-to">to me</span>
+            <span class="message-from">{{destination}}</span> <span class="message-to">to me</span>
             <button mat-icon-button class="message-more" [matMenuTriggerFor]="menu">
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu class="message-more-menu" #menu="matMenu" [overlapTrigger]="false" xPosition="before">
-              <button mat-menu-item (click)="onReply()">
+              <button mat-menu-item (click)="onCall()">
                 <mat-icon>reply</mat-icon>
                 Reply
               </button>
-              <button mat-menu-item (click)="onReply()">
+              <button mat-menu-item (click)="onCall()">
                 <mat-icon>forward</mat-icon>
                 Forward
               </button>

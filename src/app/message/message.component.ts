@@ -11,23 +11,21 @@ export class MessageComponent implements OnInit {
   @Input() opened = false;
 
   @Input() avatar = '';
-  @Input() from = '';
+  @Input() destination = '';
   @Input() subject = '';
   @Input() body = '';
   @Input() recieved = new Date();
 
-  @Output() removed = new EventEmitter<void>();
-  @Output() reply = new EventEmitter<{ to: string, subject: string }>();
+  @Output() removed = new EventEmitter<String>();
+  @Output() call = new EventEmitter<String>();
 
   onOpenToggle(): void {
     this.opened = !this.opened;
   }
 
-  onReply(): void {
-    this.reply.emit({
-      to: this.from,
-      subject: `RE: ${this.subject}`
-    });
+  onCall(): void {
+    
+    console.log("onCall");
   }
   constructor() { }
 

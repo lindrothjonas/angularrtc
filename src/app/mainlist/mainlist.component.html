@@ -1,16 +1,14 @@
 <content>
-  <mat-list>
+  <mat-list *ngFor="let i of ['Today']">
     <mat-list-item class="category-title">
-      Today
+      {{i}}
     </mat-list-item>
-    <mat-list-item style="height:auto;" *ngFor="let message of messages; let i = index;">
+    <mat-list-item style="height:auto;" *ngFor="let hist of history$ | async">
       <app-message style="width:100%;"
-        [avatar]="message.avatar"
-        [from]="message.from"
-        [subject]="message.subject"
-        [body]="message.body"
-        [recieved]="message.recieved"
-        (removed)="onRemove(i)"
+        [avatar]="a"
+        [destination]="hist.destination"
+        [recieved]="hist.timestamp"
+        (call)="onCall($event)"
         (reply)="onNewMessage($event)">
       </app-message>
     </mat-list-item>
@@ -20,7 +18,7 @@
   mat-fab
   color="accent"
   class="new-fab"
-  (click)="onNewCall(null)"
+  (click)="onNewCall(null, null)"
   (mouseenter)="onMouseEnter(true)"
   (mouseleave)="onMouseEnter(false)"
   matTooltip="New Call"

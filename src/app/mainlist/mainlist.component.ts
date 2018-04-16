@@ -7,6 +7,8 @@ import { DialerComponent } from '../dialer/dialer.component';
 import { SinchService } from '../sinch.service';
 import { CallingService } from '../services/calling.service';
 import { Call } from '../rtc/sinch/sinch.module';
+import { Observable } from 'rxjs/Observable';
+import { HistoryModule, History } from '../database/history/history.module';
 
 
 @Component({
@@ -16,28 +18,35 @@ import { Call } from '../rtc/sinch/sinch.module';
   encapsulation: ViewEncapsulation.None
 })
 export class MainlistComponent implements OnInit {
-  messages = messages;
-  private callDialogOpen:boolean = false;
-  private dialogRef:MatDialogRef<DialerComponent>;
-  public newCallIcon:string = "add";
+  private callDialogOpen:boolean = false
+  private dialogRef:MatDialogRef<DialerComponent>
+  public newCallIcon:string = "add"
+  public history$:Observable<History[]>
   constructor(private snackBar: MatSnackBar,
     private dialog: MatDialog, 
-    private sinchService:SinchService, private callingService:CallingService) { }
+    private sinchService:SinchService, 
+    private callingService:CallingService,
+    private historyModule:HistoryModule) { }
 
   ngOnInit() {
+    this.history$ = this.historyModule.getData()
     this.callingService.incomingCallEvent().subscribe((call) => {
       if (this.callDialogOpen) {
         this.dialogRef.close(false);
         this.callDialogOpen = false;
       }
-      this.onNewCall(call);
+      this.onNewCall(call, null);
     });
   }
 
+  onCall(destination:String) {
+    this.onNewCall(null, destination);
+  }
   onMouseEnter(entered:boolean) {
     this.newCallIcon = entered ? "call" : "add"
   }
-  onNewCall(call:Call) {
+
+  onNewCall(call:Call, destination:String) {
     if (this.callDialogOpen) {
       this.dialogRef.close(false);
       this.callDialogOpen = false;
@@ -48,7 +57,7 @@ export class MainlistComponent implements OnInit {
       height: '480px',
       panelClass: 'dialer-dialg',
       hasBackdrop:false,
-      data: call
+      data: call != null ? call : destination
     });
     this.callDialogOpen = true;
     this.dialogRef.afterClosed().subscribe(result => {

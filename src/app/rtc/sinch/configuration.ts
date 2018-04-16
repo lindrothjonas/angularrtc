@@ -17,7 +17,9 @@ export class Account {
                 public identity:string, 
                 public secret:string, 
                 public configuration:Configuration, 
-                public name:string = null, public description:string = null, id:string = null) {
+                public name:string = null, 
+                public description:string = null, 
+                id:string = null) {
         this.id = id ? id : UUID.UUID();
     }
 }

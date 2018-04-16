@@ -1,7 +1,6 @@
 import { Component, OnInit, AfterViewChecked } from '@angular/core';
 import {MediaMatcher} from '@angular/cdk/layout';
 import {ChangeDetectorRef, ViewChild} from '@angular/core';
-import { AccountService } from '../services/account.service'
 import { Account, AccountType, IAccountUpdated } from '../rtc/sinch/configuration'
 import { startWith, tap, delay } from 'rxjs/operators';
 import { Observable } from 'rxjs/Observable';
@@ -11,6 +10,7 @@ import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDi
 import { AccountSettingsComponent } from '../account-settings/account-settings.component'
 import { SinchService } from '../sinch.service';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { AccountModule } from '../database/account/account.module';
 
 @Component({
   selector: 'app-sidenav',
@@ -22,13 +22,13 @@ export class SidenavComponent implements OnInit {
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
   public accounts$:Observable<Account[]>;
-  private accounts:Account[];
   private account:Account;
+  
   constructor(private snackBar: MatSnackBar,
+    private accountModule:AccountModule,
     private dialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef, 
     media: MediaMatcher, 
-    private accountService:AccountService, 
     private sinchService:SinchService) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
@@ -41,20 +41,20 @@ export class SidenavComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.accounts$ = this.accountService.getAccounts();
+    this.accounts$ = this.accountModule.getData()
     this.sinchService.startActive().subscribe((account) => {
       this.account = account;
       
-    });
+    })
   }
 
   removeAccount(id:string) {
-    this.accountService.removeAccount(id).subscribe(result => {
+    this.accountModule.remove(id).subscribe(result => {
       if (result) {
         this.snackBar.open('Account deleted.', null, {
           duration: 2000
         });
-        this.accounts$ = this.accountService.getAccounts();
+        
       }
     });
   }
@@ -65,13 +65,13 @@ export class SidenavComponent implements OnInit {
     if (account.active) {
       this.sinchService.stop(account.id).subscribe(() => {
         this.account = null
-        this.accounts$ = this.accountService.getAccounts();
+        
       });
     } else {
       if (this.account == null) {
         this.sinchService.start(account.id).subscribe(() => {
           this.account = account
-          this.accounts$ = this.accountService.getAccounts();
+          
         });
       }
     }
@@ -89,7 +89,7 @@ export class SidenavComponent implements OnInit {
         this.snackBar.open('Account saved.', null, {
           duration: 2000
         });
-        this.accounts$ = this.accountService.getAccounts();
+        
       }
     });
   }

@@ -4,6 +4,8 @@ import { SinchService } from '../sinch.service';
 import { Call } from '../rtc/sinch/sinch.module';
 import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialogRef } from '@angular/material';
 import { CallingService } from '../services/calling.service';
+import { HistoryModule, History } from '../database/history/history.module';
+import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-dialer',
@@ -17,6 +19,12 @@ export class DialerComponent implements OnInit {
   public tooltip:string = "Call";
   public initiating:boolean = false;
   private outgoing:boolean = false;
+  private call:Call;
+  //public history$:Observable<History[]>
+  //public history:Map<String, History[]> = new Map<String, History[]>()
+  public history:History[] = new Array<History>()
+  
+  public destinations:Array<String> = new Array<String>()
   private icon: { [id: string]: {icon:string}} = {
     "progressing": {icon:"call"},
     "established": {icon:"phone_in_talk"},
@@ -26,17 +34,26 @@ export class DialerComponent implements OnInit {
  };
   
 
-  constructor(@Inject(MAT_DIALOG_DATA) public call: Call,
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any,
     private sinchService:SinchService, 
     private zone: NgZone, 
     private dialogRef:MatDialogRef<DialerComponent>, 
-    private callingService:CallingService) { 
-    if (call != null) {
+    private callingService:CallingService,
+    private historyModule:HistoryModule) {
+      
+    
+    
+    //this.history$ = this.historyModule.getData()
+    if (data != null && data instanceof Call) {
+      this.call = data;
       this.initiating = false
       this.tooltip = "Answer"
       this.handleCallEvent("incoming")
       this.call.callEvents().subscribe((state) => this.handleCallEvent(state));
+      
     } else {
+      
+      this.numberCtrl.setValue(data)
       this.outgoing = true;
       this.tooltip = "Call"
     }
@@ -44,7 +61,27 @@ export class DialerComponent implements OnInit {
   }
 
   ngOnInit() {
-
+    this.historyModule.getAll().subscribe((history) => {
+      //this.history = history
+      let last:String = null
+      history.sort((a,b) => {
+        if (a.destination > b.destination) return 1
+        else if (a.destination < b.destination) return -1
+        else return 0
+      }).some(((item, index, _arr) => { 
+        if (item.destination != last) {
+          this.history.push(item)
+          last = item.destination
+        }
+          
+        
+        return index > 4
+      })
+      
+      //this.history[item.destination].push(item)})
+      //this.destinations = Array.from(this.history.keys())
+      
+    })
   }
 
   onHangup() {
@@ -62,8 +99,10 @@ export class DialerComponent implements OnInit {
       this.callButtonIcon = "call_end";
       if (this.numberCtrl.value.substring(0, 1) == "+") {
         this.call = this.callingService.callPhoneNumber(this.numberCtrl.value);
+        this.historyModule.set(new History(null, this.numberCtrl.value, "pstn", new Date())).subscribe()
       } else {
         this.call = this.callingService.callUser(this.numberCtrl.value);
+        this.historyModule.set(new History(null, this.numberCtrl.value, "data", new Date())).subscribe();
       }
       
       this.call.callEvents().subscribe((state) => this.handleCallEvent(state));
@@ -75,9 +114,12 @@ export class DialerComponent implements OnInit {
       this.initiating = false;
       if (state == "ended") {
         this.call = null;
-        setTimeout(() => this.zone.run(() => {if (this.call == null) this.dialogRef.close()}), 10000);
+        setTimeout(() => this.zone.run(() => {if (this.call == null) this.dialogRef.close()}), 3000);
       }
       this.callIcon = this.icon[state].icon 
     })
+  }
+  onDestinationSelected(event: MatAutocompleteSelectedEvent) {
+
   }
 }

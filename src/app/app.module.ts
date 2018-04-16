@@ -12,11 +12,13 @@ import { MainlistComponent} from './mainlist/mainlist.component';
 import { MessageComponent} from './message/message.component';
 import { TestComponent } from './test/test.component'
 import { SinchService } from './sinch.service'
-import { AccountService } from './services/account.service'
+import { LocalStorageService } from './services/localstorage.service'
 import { AsyncLocalStorageModule } from 'angular-async-local-storage'
 import { AccountSettingsComponent } from './account-settings/account-settings.component';
 import { DialerComponent } from './dialer/dialer.component';
 import { CallingService } from './services/calling.service';
+import { AccountModule } from './database/account/account.module';
+import { HistoryModule } from './database/history/history.module';
 
 @NgModule({
   declarations: [
@@ -42,7 +44,7 @@ import { CallingService } from './services/calling.service';
     AccountSettingsComponent,
     DialerComponent
   ],
-  providers: [AccountService, SinchService, CallingService],
+  providers: [LocalStorageService, SinchService, CallingService, AccountModule, HistoryModule],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

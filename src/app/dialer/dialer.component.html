@@ -6,8 +6,13 @@
   </div>
   <mat-dialog-content class="new-message-content">
     <mat-form-field class="subject-input">
-      <input matInput placeholder="Number to call" [formControl]="numberCtrl" />
+      <input matInput [matAutocomplete]="auto" placeholder="Destination to call" [formControl]="numberCtrl" />
     </mat-form-field>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onDestinationSelected($event)">
+      <mat-option *ngFor="let item of history" [value]="item.destination">
+        {{ item.destination }}
+      </mat-option>
+    </mat-autocomplete>
   </mat-dialog-content>
   <mat-dialog-actions>
       <button [class.hide]="(call != null && outgoing) || (call != null && call.getState() == 'ESTABLISHED')"

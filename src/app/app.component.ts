@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import {MediaMatcher} from '@angular/cdk/layout';
 import {ChangeDetectorRef, ViewChild, OnInit } from '@angular/core';
 import { SinchService } from './sinch.service'
-import { AccountService } from './services/account.service'
 import { AsyncLocalStorage } from 'angular-async-local-storage'
 import { CallingService } from './services/calling.service';
 
