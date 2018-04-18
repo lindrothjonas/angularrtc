@@ -56,6 +56,8 @@ export class SinchService {
   startAccount(account:Account):Observable<any> {
     this.sinch = new SinchModule();
     this.sinch.init(account.key, account.configuration);
+    if (account.platform > 0)
+      this.sinch.setUrls(this.accountModule.platforms[account.platform].urls)
     this.sinch.signIn(account.identity, account.secret)
     .then(() => { 
       this.sinch.startActiveConnection().then(() => this.activateAccount(account, true).subscribe(() => {

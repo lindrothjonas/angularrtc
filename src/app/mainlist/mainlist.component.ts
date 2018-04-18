@@ -29,7 +29,7 @@ export class MainlistComponent implements OnInit {
     private historyModule:HistoryModule) { }
 
   ngOnInit() {
-    this.history$ = this.historyModule.getData()
+    this.history$ = this.historyModule.getSortedData()
     this.callingService.incomingCallEvent().subscribe((call) => {
       if (this.callDialogOpen) {
         this.dialogRef.close(false);
@@ -38,8 +38,10 @@ export class MainlistComponent implements OnInit {
       this.onNewCall(call, null);
     });
   }
-
-  onCall(destination:String) {
+  onRemoved(id:string):void {
+    this.historyModule.remove(id).subscribe();
+  }
+  onCall(destination:String):void {
     this.onNewCall(null, destination);
   }
   onMouseEnter(entered:boolean) {

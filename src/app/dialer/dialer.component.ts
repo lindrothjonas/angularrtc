@@ -18,8 +18,8 @@ export class DialerComponent implements OnInit {
   public callButtonIcon:string = "call";
   public tooltip:string = "Call";
   public initiating:boolean = false;
-  private outgoing:boolean = false;
-  private call:Call;
+  public outgoing:boolean = false;
+  public call:Call;
   //public history$:Observable<History[]>
   //public history:Map<String, History[]> = new Map<String, History[]>()
   public history:History[] = new Array<History>()
@@ -77,11 +77,7 @@ export class DialerComponent implements OnInit {
         
         return index > 4
       })
-      
-      //this.history[item.destination].push(item)})
-      //this.destinations = Array.from(this.history.keys())
-      
-    })
+    )})
   }
 
   onHangup() {
@@ -90,22 +86,25 @@ export class DialerComponent implements OnInit {
     }
   }
 
-  onCall() {
+  callStarted(call:Call, type:string) {
+    this.call = call
+    this.call.callEvents().subscribe((state) => this.handleCallEvent(state))
+    let history:History = { id:null, destination:this.numberCtrl.value, type:type, timestamp:new Date()}
+    this.historyModule.set(history).subscribe()
+  }
+  onCall():void {
     if (this.call) {
       this.call.answer();
     } else {
       this.initiating = true;
       this.outgoing = true;
       this.callButtonIcon = "call_end";
-      if (this.numberCtrl.value.substring(0, 1) == "+") {
-        this.call = this.callingService.callPhoneNumber(this.numberCtrl.value);
-        this.historyModule.set(new History(null, this.numberCtrl.value, "pstn", new Date())).subscribe()
-      } else {
-        this.call = this.callingService.callUser(this.numberCtrl.value);
-        this.historyModule.set(new History(null, this.numberCtrl.value, "data", new Date())).subscribe();
-      }
       
-      this.call.callEvents().subscribe((state) => this.handleCallEvent(state));
+      if (this.numberCtrl.value.substring(0, 1) == "+") {
+        this.callingService.callPhoneNumber(this.numberCtrl.value).subscribe((call) => this.callStarted(call, "pstn"))
+      } else {
+        this.callingService.callUser(this.numberCtrl.value).subscribe((call) => this.callStarted(call, "user"))
+      }
     }
   }
   

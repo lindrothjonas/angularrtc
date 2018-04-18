@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Configuration } from './configuration'
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
+import { MediaModule, Stream } from '../media/media/media.module';
 declare var SinchClient: any;
 
 @NgModule({
@@ -12,8 +13,11 @@ declare var SinchClient: any;
   declarations: []
 })
 
+
+
 export class SinchModule {
   private sinchClient: any;
+  
   constructor() {
 
   }
@@ -29,8 +33,8 @@ export class SinchModule {
     });
   }
   
-  setUrls(urls:Urls) {
-    this.sinchClient.setUrls(urls);
+  setUrls(urls:any) {
+    this.sinchClient.setUrl(urls);
   }
 
   getSession():Session {
@@ -61,15 +65,22 @@ export class SinchModule {
 }
 
 export class CallClient {
+  
   constructor(private callClient:any) {
-
+    
+    /*this.callClient.initStream(undefined, true).then((stream) => {
+      stream.getTracks().forEach(track => {
+        track.stop();
+      });
+      
+    });*/
   }
-  callPhoneNumber(number:string):Call {
-    return new Call(this.callClient.callPhoneNumber(number));
+  callPhoneNumber(number:string, stream:Stream = null):Call {
+    return new Call(this.callClient.callPhoneNumber(number, undefined, stream.stream || undefined), stream);
   }
 
-  callUser(user:string, headers:any = null, customStream:any = null):Call {
-    return new Call(this.callClient.callUser(user, headers));
+  callUser(user:string, headers:any = null, stream:Stream = null):Call {
+    return new Call(this.callClient.callUser(user, headers, stream.stream || undefined), stream);
   }
 
   incomingCallObserver():Observable<Call> {
@@ -82,7 +93,7 @@ export class CallClient {
 }
 
 export class Call {
-  constructor(private call:any) {
+  constructor(private call:any, public stream:Stream = null) {
     
   }
   hangup() {

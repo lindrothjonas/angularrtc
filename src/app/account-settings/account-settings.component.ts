@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialogRef } from '@angular/material';
-import { Account, Configuration, AccountType } from '../rtc/sinch/configuration';
+import { MatChipInputEvent, MatSelect, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialogRef } from '@angular/material';
+import { Account, Configuration, AccountType,Platform } from '../rtc/sinch/configuration';
 import { AccountModule } from '../database/account/account.module';
 
 @Component({
@@ -15,17 +15,23 @@ export class AccountSettingsComponent implements OnInit {
   keyCtrl = new FormControl();
   identityCtrl = new FormControl();
   secretCtrl = new FormControl();
+  platform:number = 0
+  
+
   constructor(@Inject(MAT_DIALOG_DATA) public data: Account, 
               private dialogRef:MatDialogRef<AccountSettingsComponent>,
-              private accountModule:AccountModule) { 
+              public accountModule:AccountModule) { 
     if (this.data) {
       this.nameCtrl.setValue(this.data.name);
       this.descriptionCtrl.setValue(this.data.description);
       this.keyCtrl.setValue(this.data.key);
       this.identityCtrl.setValue(this.data.identity);
       this.secretCtrl.setValue(this.data.secret);
-      
+      this.platform = this.data.platform == null ? 0 : this.data.platform
+    } else {
+    
     }
+
 
   }
 
@@ -40,7 +46,8 @@ export class AccountSettingsComponent implements OnInit {
       this.data.configuration,
       this.nameCtrl.value,
       this.descriptionCtrl.value,
-      this.data.id);
+      this.data.id, 
+      this.platform);
     data.active = this.data.active;
     this.accountModule.set(data).subscribe(() => this.dialogRef.close(true));
     

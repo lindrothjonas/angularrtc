@@ -1,7 +1,7 @@
 import { NgModule, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LocalStorageService } from '../../services/localstorage.service';
-import { Account, AccountType, Configuration } from '../../rtc/sinch/configuration'
+import { Account, AccountType, Configuration, Platform } from '../../rtc/sinch/configuration'
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 
@@ -13,6 +13,10 @@ import { Subject } from 'rxjs/Subject';
 })
 @Injectable()
 export class AccountModule { 
+  public platforms = new Array<Platform>(
+    new Platform(null, 0, "Live", "Live"), 
+    new Platform("01", 1, "Ftest-01", "Ftest-01"),
+    new Platform("02", 2, "Ftest-02", "Ftest-02"))
   private table:string = "accounts"
   constructor(private accountService:LocalStorageService) { 
   }

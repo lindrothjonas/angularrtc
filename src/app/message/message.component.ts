@@ -15,7 +15,7 @@ export class MessageComponent implements OnInit {
   @Input() subject = '';
   @Input() body = '';
   @Input() recieved = new Date();
-
+  @Input() id = '';
   @Output() removed = new EventEmitter<String>();
   @Output() call = new EventEmitter<String>();
 

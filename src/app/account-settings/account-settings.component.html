@@ -9,6 +9,13 @@
     <input matInput placeholder="Name" [formControl]="nameCtrl" />
   </mat-form-field>
   <mat-form-field class="subject-input">
+    <mat-select placeholder="Platform" [(value)]="platform">
+      <mat-option *ngFor="let platform of accountModule.platforms" [value]="platform.id">
+        {{ platform.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field class="subject-input">
     <input matInput placeholder="Key" [formControl]="keyCtrl" />
   </mat-form-field>
   <mat-form-field class="subject-input">

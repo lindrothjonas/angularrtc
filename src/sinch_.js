@@ -12037,9 +12037,9 @@ CallClient.prototype.initStream = function(customStream, disableVideo) {
 	else if(this.localMediaStream === undefined) { // TODO: Add support for caching with/without video
 		this.sinch.log(new Notification(0, 1, 'Will retrieve new Mic for stream'));
 		if (navigator.mediaDevices) {
-            navigator.mediaDevices.getUserMedia({video: videoSupport , audio: true})
+			navigator.mediaDevices.getUserMedia({video: videoSupport , audio: true})
 				.then(function(stream) {
-                    this.localMediaStream = stream;
+					this.localMediaStream = stream;
 					deferred.resolve(this.localMediaStream);
 				})
 				.catch(function(error) {

@@ -8,7 +8,9 @@
         [avatar]="a"
         [destination]="hist.destination"
         [recieved]="hist.timestamp"
+        [id]="hist.id"
         (call)="onCall($event)"
+        (removed)="onRemoved($event)"
         (reply)="onNewMessage($event)">
       </app-message>
     </mat-list-item>
