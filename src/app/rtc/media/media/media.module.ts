@@ -103,10 +103,12 @@ export class MediaModule {
 export class Media  {
   protected element:HTMLMediaElement
   protected externalElement:boolean = false
-  private source:string
   private loop:boolean
   private muted:boolean
 
+  constructor(private source:string = null) {
+    
+  }
   public setElement(nativeElement:HTMLMediaElement) {
     this.element = nativeElement
     this.externalElement = true
@@ -125,6 +127,12 @@ export class Media  {
       this.element.loop = loop
       this.element.muted = muted
       this.element.play()    
+    }
+  }
+
+  public play(loop:boolean = false, muted:boolean = true):void {
+    if (this.source != null) {
+      this.playSource(this.source, loop, muted)
     }
   }
   
@@ -154,8 +162,8 @@ export class Media  {
 }
 
 export class Audio extends Media {
-  constructor(externalElement:boolean = false) {
-    super()
+  constructor(source:string = null, externalElement:boolean = false) {
+    super(source)
     this.externalElement = externalElement
   }
   public getElement():HTMLMediaElement {
@@ -168,8 +176,8 @@ export class Audio extends Media {
 }
 
 export class Video extends Media {
-  constructor(externalElement:boolean = true) {
-    super()
+  constructor(source:string = null, externalElement:boolean = true) {
+    super(source)
     this.externalElement = externalElement
     
   }
