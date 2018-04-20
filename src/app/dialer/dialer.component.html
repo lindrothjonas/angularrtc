@@ -1,11 +1,40 @@
+<div class="new-message-toolbar" *ngIf="incall" style="height: 105%;overflow:hidden;">
+  <video class="largevideoframe" #incomingmedia></video>
+  <video class="smallvideoframe" #outgoingmedia muted></video>
+  <div style="height: 130px;"></div>
+  <mat-dialog-actions>
+      <button [class.hide]="(call != null && outgoing) || (call != null && call.getState() == 'ESTABLISHED')"
+        mat-fab
+        color="accent"
+        class="newcall-fab"
+        (click)="onCall()"
+        matTooltip={{tooltip}}
+        matTooltipPosition="before"
+        [disabled]="initiating">
+        <mat-icon>call</mat-icon>
+      </button>
+      <button [class.red]="true"
+        [class.hide]="call == null"
+        mat-fab
+        color="accent"
+        class="newcall-fab"
+        (click)="onHangup()"
+        matTooltip="Hangup"
+        matTooltipPosition="before"
+        [disabled]="initiating">
+        <mat-icon>call_end</mat-icon>
+      </button>
+  </mat-dialog-actions>
+</div>
+<div *ngIf="!incall">
 <div class="new-message-toolbar" mat-dialog-title>
     <mat-icon>{{callIcon}}</mat-icon>
     <button mat-icon-button mat-dialog-close>
       <mat-icon>clear</mat-icon>
     </button>
-  </div>
-  <mat-dialog-content class="new-message-content">
-    <mat-form-field class="subject-input">
+  </div> 
+  <mat-dialog-content class="new-message-content" >
+      <mat-form-field class="subject-input">
       <input matInput [matAutocomplete]="auto" placeholder="Destination to call" [formControl]="numberCtrl" />
     </mat-form-field>
     <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onDestinationSelected($event)">
@@ -37,4 +66,5 @@
         <mat-icon>call_end</mat-icon>
       </button>
   </mat-dialog-actions>
-  
+</div>
+

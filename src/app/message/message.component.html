@@ -5,12 +5,12 @@
         class="message-toolbar"
         fxLayoutAlign="start center"
         fxLayout="row">
-        <div fxFlex="50px" [fxShow]="!opened">
+        <div fxFlex="50px" [fxShow]="true">
           <span class="avatar accent-1">
             {{avatar}}
           </span>
         </div>
-        <div fxFlex="20%" [fxShow]="!opened">
+        <div fxFlex="20%" [fxShow]="true">
           {{destination}}
         </div>
         <div fxFlex fxFill class="message-subject">
@@ -18,14 +18,14 @@
         </div>
         <div fxFlex="25%" class="btn-col">
           <span>{{recieved.toLocaleTimeString()}}</span>
-          <button
+          <button (click)="$event.stopPropagation();"
             [matMenuTriggerFor]="snoozeMenu"
             mat-icon-button
             matTooltip="Reply..."
             matTooltipPosition="above">
             <mat-icon>reply</mat-icon>
           </button>
-          <mat-menu class="snooze-menu" #snoozeMenu="matMenu" [overlapTrigger]="false" xPosition="before">
+          <mat-menu  class="snooze-menu" #snoozeMenu="matMenu" [overlapTrigger]="false" xPosition="before">
             <h3>Reply...</h3>
             <hr />
             <button mat-menu-item>
@@ -41,10 +41,10 @@
               Message
             </button>
           </mat-menu>
-          <button mat-icon-button (click)="call.emit(destination)" matTooltip="Call" matTooltipPosition="above">
+          <button mat-icon-button (click)="$event.stopPropagation();call.emit(destination)" matTooltip="Call" matTooltipPosition="above">
               <mat-icon>call</mat-icon>
           </button>
-          <button mat-icon-button (click)="removed.emit(id)" matTooltip="Delete" matTooltipPosition="above">
+          <button mat-icon-button (click)="$event.stopPropagation();removed.emit(id)" matTooltip="Delete" matTooltipPosition="above">
             <mat-icon>delete</mat-icon>
           </button>
           
@@ -52,14 +52,10 @@
       </div>
       </mat-expansion-panel-header>
       <div class="message-body" fxLayout="row">
-        <div fxFlex="50px">
-          <span class="avatar accent-1 large">
-            {{avatar}}
-          </span>
-        </div>
+        
         <div fxFlex>
           <div class="message-body-toolbar">
-            <span class="message-from">{{destination}}</span> <span class="message-to">to me</span>
+              <span class="message-from">{{outgoing ? "me to" : destination}}</span> <span class="message-to">{{!outgoing ? "to me" : destination}}</span>
             <button mat-icon-button class="message-more" [matMenuTriggerFor]="menu">
               <mat-icon>more_vert</mat-icon>
             </button>

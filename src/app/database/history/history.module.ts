@@ -14,8 +14,11 @@ import { Subject } from 'rxjs/Subject';
 export class History {
   public id:string
   public destination:string
+  public sessionType:SessionType = SessionType.Call
   public type:string
   public timestamp:Date
+  public outgoing:boolean
+  public callState:CallState
 }
 
 @Injectable()
@@ -64,3 +67,19 @@ export class HistoryModule {
     return this.grouped
   }*/
 }
+
+
+export enum CallState {
+  Progressing = 0,
+  Initiating = 1,
+  Established = 2,
+  Ended = 3,
+  Ringing = 4,
+}
+
+export enum SessionType {
+  Uknown = 0,
+  Call = 1,
+  Messaing = 2
+}
+

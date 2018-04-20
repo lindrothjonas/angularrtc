@@ -9,6 +9,7 @@ import { CallingService } from '../services/calling.service';
 import { Call } from '../rtc/sinch/sinch.module';
 import { Observable } from 'rxjs/Observable';
 import { HistoryModule, History } from '../database/history/history.module';
+import { Audio } from '../rtc/media/media/media.module';
 
 
 @Component({
@@ -22,6 +23,7 @@ export class MainlistComponent implements OnInit {
   private dialogRef:MatDialogRef<DialerComponent>
   public newCallIcon:string = "add"
   public history$:Observable<History[]>
+  
   constructor(private snackBar: MatSnackBar,
     private dialog: MatDialog, 
     private sinchService:SinchService, 
@@ -47,17 +49,19 @@ export class MainlistComponent implements OnInit {
   onMouseEnter(entered:boolean) {
     this.newCallIcon = entered ? "call" : "add"
   }
-
+  
   onNewCall(call:Call, destination:String) {
+
     if (this.callDialogOpen) {
       this.dialogRef.close(false);
       this.callDialogOpen = false;
+      
       return;
     }
     this.dialogRef = this.dialog.open(DialerComponent, {
-      width: '350px',
-      height: '480px',
-      panelClass: 'dialer-dialg',
+      width: '390px',
+      height: '540px',
+      panelClass: 'dialer-dialog',
       hasBackdrop:false,
       data: call != null ? call : destination
     });

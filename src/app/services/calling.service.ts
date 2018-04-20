@@ -3,38 +3,40 @@ import { SinchService } from '../sinch.service';
 import { Call, CallClient } from '../rtc/sinch/sinch.module'
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import { MediaModule, Stream } from '../rtc/media/media/media.module';
+import { MediaModule, Stream, Audio } from '../rtc/media/media/media.module';
 
 
 @Injectable()
 export class CallingService {
   private events:Subject<Call>
   private callClient:CallClient
-  private audio:HTMLAudioElement
   private ringtone:string
   private progresstone:string
   private media:MediaModule
   private stream:Stream
+  private audioPlayer:Audio 
   constructor(private sinchService:SinchService) { 
     this.media = new MediaModule()
     this.events = new Subject<Call>()
     this.media.getStream(true, true).subscribe((stream) => {
       this.stream = stream
-      stream.stop()
+      this.stream.stop()
       sinchService.getEvents().subscribe((account) => {
         if (account && account.active) {
           this.callClient = sinchService.getCallClient()
           this.callClient.incomingCallObserver().subscribe((call) => {
+            this.audioPlayer = new Audio()
             this.events.next(call)
-            this.playAudio(this.ringtone)
+            this.audioPlayer.playSource(this.ringtone, true)
             this.handleAudioEvents(call);
           })
         }
       })
     })
   }
-  init(toneplayer:HTMLAudioElement, ringtone:string, progresstone:string):void {
-    this.audio = toneplayer
+  
+  init(ringtone:string, progresstone:string):void {
+    
     this.ringtone = ringtone
     this.progresstone = progresstone
   }
@@ -43,34 +45,27 @@ export class CallingService {
     return this.events.asObservable()
   }
 
-  playAudio(src:string) {
-    if (this.audio && this.audio.paused) {   
-      this.audio.src = src
-      this.audio.currentTime = 0
-      this.audio.play()
-    }
-  }
-
-  pauseAudio() {
-    if (this.audio && !this.audio.paused) {
-      this.audio.pause()
-      
-    }
-  }
+  
 
   handleAudioEvents(call:Call):void {
     call.callEvents().subscribe((state) => { 
       switch (state) {
         case "established":
-          this.pauseAudio();
-          this.playAudio(call.streamUrl());
+        if (this.audioPlayer )
+          this.audioPlayer.stop()
+           
         break;
         case "ended":
-          this.pauseAudio();
+          if (this.audioPlayer )
+            this.audioPlayer.stop()
+          this.stream.stop()
+             
         break;
         case "progressing":
-          this.playAudio(this.progresstone);
+          this.audioPlayer = new Audio();
+          this.audioPlayer.playSource(this.progresstone, true)
         break
+        
       }
     })
   }
@@ -85,10 +80,10 @@ export class CallingService {
   private call(destination:string, callNumber:boolean = false):Observable<Call> {
     return new Observable((observer) => {
       if (this.callClient != null) {
-        this.stream.start()
-        this.media.getStream(true, true).subscribe((stream) => {
-          let call:Call = callNumber ? this.callClient.callPhoneNumber(destination, stream.stream) :
-                                        this.callClient.callUser(destination, stream.stream)
+        this.media.getStream(true, !callNumber).subscribe((stream) => {
+          this.stream = stream
+          let call:Call = callNumber ? this.callClient.callPhoneNumber(destination, stream) :
+                                        this.callClient.callUser(destination, null, stream)
           this.handleAudioEvents(call);
           observer.next(call);
         })  

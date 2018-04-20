@@ -9,7 +9,7 @@ import { Component, OnInit, HostBinding, ViewEncapsulation, Input, Output, Event
 export class MessageComponent implements OnInit {
   @HostBinding('class.message-opened')
   @Input() opened = false;
-
+  @Input() outgoing = true;
   @Input() avatar = '';
   @Input() destination = '';
   @Input() subject = '';
@@ -20,7 +20,7 @@ export class MessageComponent implements OnInit {
   @Output() call = new EventEmitter<String>();
 
   onOpenToggle(): void {
-    this.opened = !this.opened;
+    //this.opened = !this.opened;
   }
 
   onCall(): void {

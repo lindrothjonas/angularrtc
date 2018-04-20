@@ -37,7 +37,12 @@ import { HistoryModule } from './database/history/history.module';
     ReactiveFormsModule,
     FlexLayoutModule,
     MaterialModule,
-    AsyncLocalStorageModule
+    AsyncLocalStorageModule,
+    RouterModule.forRoot([{
+      path: '',
+      component: AppComponent
+  },
+])
     
   ],
   entryComponents: [

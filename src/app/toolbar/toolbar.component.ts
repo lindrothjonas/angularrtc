@@ -1,5 +1,6 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { ViewEncapsulation } from '@angular/core';
+import { MatSlideToggle } from '@angular/material';
 
 @Component({
   selector: 'app-toolbar',
@@ -9,12 +10,14 @@ import { ViewEncapsulation } from '@angular/core';
 })
 export class ToolbarComponent implements OnInit {
   @Output() toolbarEvent = new EventEmitter<any>();
+  @ViewChild(MatSlideToggle) answer:MatSlideToggle
   constructor() { 
     
   }
  
   ngOnInit() {
   }
+
   onMenu() {
     this.toolbarEvent.emit();
   }

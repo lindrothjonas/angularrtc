@@ -42,15 +42,18 @@ $toolbar-color: #FFF;
 
 .newcall-fab.mat-fab {
     background-color: green;
-    top: 240px;
+    top: 300px;
+    
     margin-left: auto;
     margin-right: auto;
+    z-index: 10;
 }
 .red.mat-fab {
   background-color: red;
   margin-left: auto;
   margin-right: auto;
-  top: 240px;
+  //top: 240px;
+  z-index: 10;
 }
 
 .hide.mat-fab {
@@ -60,3 +63,20 @@ $toolbar-color: #FFF;
 .dialer-dialog {
   width: 100px;
 }
+
+video {
+  position: absolute;
+  margin-left: -20px;
+}
+video.smallvideoframe {
+height: 25%;
+z-index: 9;
+top:0px;
+
+}
+video.largevideoframe {
+  z-index: 8;
+  height: 100%;
+  width: 100%;
+}
+

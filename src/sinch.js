@@ -10364,6 +10364,7 @@ Call.prototype.removeEventListener = function(eventListener) {
 Call.prototype.setStream = function(outgoingStream) {
 	this.outgoingStream = outgoingStream;
 	this.outgoingStreamURL = window.URL.createObjectURL(outgoingStream);
+    this.execListener('onLocalStream', outgoingStream);
 
 	//NOTE: For desired functionality - add a stream after PC has been created + negotiated, the negotiation needs to be done AGAIN
 	//THIS IS NOT ENOUGH. Temporary solution - force API to require media on start.
@@ -11305,7 +11306,9 @@ Call.prototype.initPC = function(instanceId) {
 		// NOTES from Video workshop alignment API with native. 
 		// TODO: Add check for stream is video ??
 		// ALSO: During invite check SDP for video on INVITE 
-		// call.videoOffered true/false if video was offered
+        // call.videoOffered true/false if video was offered
+        this.execListener('onRemoteTrack', this.incomingStream);
+        this.sinch.log(new Notification(0, 1, 'WebRTC: ontrack', e));
 	}.bind(this)
 
 	newPc.ondatachannel = function(e) {
@@ -12125,6 +12128,7 @@ CallClient.prototype.handleIncomingCall = function (msgObj) {
 			deferred.resolve(null); 
 			return deferred.promise;
 		})() : this.initStream(this.incomingCallCustomStream)).then(function(stream) {
+            this.execListener('onMediaStream', stream)
 			return this.sinch.mxp.subscribe('signalPubNub').then(function() {
 				if(!(msgObj.decrypted.nvps || {}).nomedia) {
 					call.setStream(stream);
@@ -15262,7 +15266,7 @@ var MXPCallHandlers = {
 			//This is ugly - looking into payload to make decision. Due to MXP Legacy.
 			var temp = JSON.parse(msgObj.decrypted.bd);
 
-			if('type' in temp) { //SDP Offer/Answer
+			if('type' in temp && temp.type == 'offer' || temp.type == 'answer') { //SDP Offer/Answer
 				this.sinch.callClient && this.sinch.callClient.callBuffert[msgObj.mxpSessionId] && this.sinch.callClient.callBuffert[msgObj.mxpSessionId].mxpPeerEventSdp(msgObj);
 			}
 			else { //ICE Candidate
