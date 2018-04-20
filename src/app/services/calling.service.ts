@@ -57,9 +57,7 @@ export class CallingService {
         break;
         case "ended":
           if (this.audioPlayer )
-            this.audioPlayer.stop()
-          this.stream.stop()
-             
+            this.audioPlayer.stop()   
         break;
         case "progressing":
           this.audioPlayer = new Audio();
@@ -80,13 +78,11 @@ export class CallingService {
   private call(destination:string, callNumber:boolean = false):Observable<Call> {
     return new Observable((observer) => {
       if (this.callClient != null) {
-        this.media.getStream(true, !callNumber).subscribe((stream) => {
-          this.stream = stream
-          let call:Call = callNumber ? this.callClient.callPhoneNumber(destination, stream) :
-                                        this.callClient.callUser(destination, null, stream)
+          let call:Call = callNumber ? this.callClient.callPhoneNumber(destination) :
+                                        this.callClient.callUser(destination, null)
           this.handleAudioEvents(call);
           observer.next(call);
-        })  
+         
       } else observer.next(null);
     })
   }
