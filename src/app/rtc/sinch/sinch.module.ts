@@ -3,8 +3,52 @@ import { CommonModule } from '@angular/common';
 import { Configuration } from './configuration'
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import { MediaModule, Stream, Media, Video } from '../media/media/media.module';
-declare var SinchClient: any;
+import { Stream, Media, Video, Audio } from 'highwave';
+
+export declare class SinchClient {
+  constructor(config:SinchConfiguration)
+  config(credentials:Credentials):void
+  log(message:any, promise:Promise<any>):void
+  terminate():void
+  newUser(user:User):Promise<any>
+  startActiveConnection():Promise<void>
+  //fix parameter types
+  start(user:any):Promise<any>
+  setUrl(urls:any):void
+  signSession(configuration:any):void
+  signTicket(configuration:any):void
+  signApp(configuration:any):void
+  getSession():any
+  getCallClient():any
+
+}
+
+export declare class Credentials {
+  appKey:string
+  sessionId:string
+  sessionSecret:string
+}
+
+export declare class SinchConfiguration {
+  capabilities?:any
+  applicationKey:string
+  applicationSecret?:string
+  onLogMessage?: (message:any) => void 
+  onLogMxpMessage?: (message:any) => void
+  supportActiveConnection?:boolean 
+  expiresIn?:number 
+  customStream?:any 
+  supportManagedPush?:boolean
+  progressTimeout?:number
+}
+
+export declare class User {
+  email?:string
+  username?:string
+  number?:string
+  password?:string
+  pushNotificationDisplayName?:string
+}
 
 @NgModule({
   imports: [
@@ -16,8 +60,7 @@ declare var SinchClient: any;
 
 
 export class SinchModule {
-  private sinchClient: any;
-  
+  private sinchClient: SinchClient;
   constructor() {
 
   }
@@ -27,9 +70,7 @@ export class SinchModule {
       applicationKey: applicationKey,
       capabilities: {calling: true, video: true},
       supportActiveConnection: configuration ? configuration.supportActiveConnection : true,
-      onLogMessage: function(message) {
-        console.log(message);
-      },
+      onLogMessage: (message) =>  console.log(message)
     });
   }
   
@@ -52,6 +93,7 @@ export class SinchModule {
   signIn(user:string, password:string):Promise<any> {
     return this.start({ username: user, password:password});
   }
+
   register(user:string, password:string):Promise<any> {
     return this.sinchClient.newUser({ username: user, password:password});
   }
@@ -70,60 +112,65 @@ export class CallClient {
     
   }
   callPhoneNumber(number:string, stream:Stream = null):Call {
-    return new Call(this.callClient.callPhoneNumber(number, undefined, stream.stream || undefined), stream);
+    return new Call(this.callClient.callPhoneNumber(number, undefined, stream != null && stream.stream != null ? stream.stream : undefined), stream != null);
   }
 
   callUser(user:string, headers:any = null, stream:Stream = null):Call {
-    return new Call(this.callClient.callUser(user, undefined, stream.stream || undefined), stream);
+    return new Call(this.callClient.callUser(user, headers, stream != null && stream.stream != null ? stream.stream : undefined), stream != null);
   }
 
   incomingCallObserver():Observable<Call> {
     return new Observable<Call>((observer) => {
-    this.callClient.addEventListener( { onIncomingCall : function(call) {
-                                        observer.next(new Call(call))
-                                      }});
+    this.callClient.addEventListener( { onIncomingCall : (call) => observer.next(new Call(call))});
     })
   }
 }
 
+export interface ICallEventListener {
+  onCallEstablished(call:Call):void;
+}
+
 export class Call {
   private callSubject:Subject<string> = new Subject()
-  private callEventObservable:Observable<string>
   private localmedia:Media
   private remotemedia:Media
-  constructor(private call:any, public stream:Stream = null) {
-    this.callEventObservable = new Observable<string>((observer) => {
-      this.call.addEventListener({ 
-        onCallProgressing: function(call) { observer.next("progressing");},
-        onCallEstablished: function(call) {observer.next("established");},
-        onCallEnded: function(call) { observer.next("ended");},
-        onLocalStream: function(call, stream) { observer.next("mediastream"); },
-        onRemoteTrack: function(call, stream) { observer.next("onremotetrack"); }
-      });
-    })
-    this.callEventObservable.subscribe((state) => {
-      switch (state) {
-        case "mediastream":
-          let stream:Stream = this.getLocalStream()
-          this.localmedia = (stream.hasVideo() ? new Video() : new Audio()) as Media
-          this.localmedia.playSource(stream.getStreamUrl(), false, true)
-        break
-        case "established":
-          let remotestream:Stream = this.getRemoteStream()
-          if (remotestream) {
-            this.remotemedia = (remotestream.hasVideo() ? new Video() : new Audio()) as Media
-            this.remotemedia.playSource(remotestream.getStreamUrl(), false, true)
-          }
-        break
-        case "onremotetrack":
-          
-          
-        break
-      }
-       this.callSubject.next(state)
+  constructor(private call:any, public externalStream:boolean = false) {
+    this.call.addEventListener({ 
+      onCallProgressing: (call) => { this.callSubject.next("progressing")},
+      onCallEstablished: (call) => { 
+        let stream:Stream = this.getRemoteStream();
+        stream.stream = this.call.pc.getRemoteStreams()[0]
+        this.remotemedia = this.createMedia(stream)
+        this.callSubject.next("established")
+        if (this.remotemedia) {
+          this.callSubject.next("onremotemedia")
+        }
+        
+      },
+      onCallEnded: (call) => {
+        if (!this.externalStream) {
+          this.getLocalStream().stop()
+        }
+        this.callSubject.next("ended")
+      },
+      onLocalStream: (call:any, stream:any) => { 
+        this.localmedia = this.createMedia(this.getLocalStream())
+        if (this.localmedia) {
+          this.callSubject.next("onlocalmedia") 
+        }
+      },
+      onRemoteTrack: (call) => {  }
     });
   }
   
+  createMedia(stream:Stream):Media {
+    if (stream != null) {
+      let media:Media = (stream.hasVideo() ? new Video(stream.getStreamUrl()) : new Audio(stream.getStreamUrl())) as Media
+      return media
+    }
+    return null
+  }
+
   hangup() {
     this.call.hangup()
   }
@@ -148,7 +195,7 @@ export class Call {
     return this.callSubject.asObservable()
   }
   public getLocalStream():Stream {
-    return new Stream(this.call.outgoingStream)
+    return Stream.Create(this.call.outgoingStream)
   }
   getRemoteUserId():string {
     return this.call.getRemoteUserId()
@@ -163,7 +210,9 @@ export class Call {
 
   getRemoteStream():Stream {
     if (this.call.pc) {
-      return new Stream(this.call.pc.getRemoteStreams()[0])
+      let stream:any = this.call.pc.getRemoteStreams()[0]
+      let remoteStream:Stream = Stream.Create(stream)
+      return remoteStream
     }
     return null
   }

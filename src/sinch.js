@@ -14999,7 +14999,8 @@ var MXPCallingVersion = 10;
 MXP.prototype.joinIncomingCall = function(call, genUrl) {
 	var deferred = Q.defer();
 
-	var msgObj = new MXPMessageObj({mxpSessionId: call.callId}, call);
+    var msgObj = new MXPMessageObj({mxpSessionId: call.callId}, call, true);
+    
 	msgObj.decrypted.bd = genUrl || null; 
 	msgObj.decrypted.md = 3;
 	msgObj.decrypted.bt = genUrl ? 'media' : 'sdp';
@@ -15010,7 +15011,7 @@ MXP.prototype.joinIncomingCall = function(call, genUrl) {
 	}).fail(function(error) {
 		deferred.reject(error);
 	}).progress(function(note) {
-		deferred.notify(note);
+		deferred.notify(note)
 	}.bind(this));
 	
 	return deferred.promise;
@@ -15026,7 +15027,8 @@ MXP.prototype.callJoined = function(call) {
 	msgObj.decrypted.bt = 'client';
 	msgObj.decrypted.bv = MXPCallingVersion;
 
-	delete msgObj.decrypted.nvps.to; //No adressing in JOINED
+    if (msgObj.decrypted.nvps)
+	    delete msgObj.decrypted.nvps.to; //No adressing in JOINED
 
 	this.sendMXP(msgObj).then(function() {
 		deferred.resolve();
@@ -15430,7 +15432,7 @@ for(var key in MXPIMHandlers) {
  * @param {Call} opt Optional object to get custom parameters from
  */
  //TODO: Fix better recursive cloning of objects
-function MXPMessageObj(msgObj, opt) {
+function MXPMessageObj(msgObj, opt, setActiveInstance) {
 	this.decrypted = {};
 	for(var key in msgObj) {
 		if(typeof msgObj[key] === 'object') {
@@ -15450,7 +15452,7 @@ function MXPMessageObj(msgObj, opt) {
 	}
 
 	if(opt instanceof Call) {
-		if(opt.activeInstance) {
+		if(setActiveInstance && opt.activeInstance) {
 			this.decrypted.nvps = this.decrypted.nvps || {};
 			this.decrypted.nvps.to = opt.activeInstance;
 		}

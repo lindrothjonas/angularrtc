@@ -9,7 +9,7 @@ import { CallingService } from '../services/calling.service';
 import { Call } from '../rtc/sinch/sinch.module';
 import { Observable } from 'rxjs/Observable';
 import { HistoryModule, History } from '../database/history/history.module';
-import { Audio } from '../rtc/media/media/media.module';
+import { Audio } from 'sinchsdk';
 
 
 @Component({
@@ -22,7 +22,7 @@ export class MainlistComponent implements OnInit {
   private callDialogOpen:boolean = false
   private dialogRef:MatDialogRef<DialerComponent>
   public newCallIcon:string = "add"
-  public history$:Observable<History[]>
+  public history:History[]
   
   constructor(private snackBar: MatSnackBar,
     private dialog: MatDialog, 
@@ -31,7 +31,7 @@ export class MainlistComponent implements OnInit {
     private historyModule:HistoryModule) { }
 
   ngOnInit() {
-    this.history$ = this.historyModule.getSortedData()
+    this.historyModule.getSortedData().subscribe((history) => this.history = history)
     this.callingService.incomingCallEvent().subscribe((call) => {
       if (this.callDialogOpen) {
         this.dialogRef.close(false);

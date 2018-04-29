@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AsyncLocalStorage } from 'angular-async-local-storage';
 import { Account, AccountType, Configuration } from '../rtc/sinch/configuration'
-import { Observable } from 'rxjs/Observable';
 import { catchError, map, tap } from 'rxjs/operators';
 import { UUID } from 'angular2-uuid';
-import { Subject } from 'rxjs/Subject';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Subject, BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable()
 export class LocalStorageService {
@@ -16,15 +14,18 @@ export class LocalStorageService {
     this.data = new Map<string, Subject<any[]>>()
   }
 
-  getData(table:string):Observable<any[]> {
+  getData(table:string):Subject<any[]> {
     if (this.data[table] == null) {
       this.data[table] = new Subject()
-      this.getAll(table).subscribe((accounts) => {
-        this.data[table].next(accounts)
-      })
+      
     }
-
-    return this.data[table].asObservable();
+    this.getAll(table).subscribe((accounts) => {
+      this.data[table].next(accounts)
+    })
+    /*else if (this.tables[table] != null) {
+      this.data[table].next(Array.from(this.tables[table].values()))
+    }*/
+    return this.data[table];
   }
   tableUpdated(table:string):void {
     if (this.data[table]) {
@@ -62,10 +63,10 @@ export class LocalStorageService {
 
   getAll(table:string):Observable<any[]> {
     return new Observable((observable) => {
-      if (this.tables[table]) {
+      /*if (this.tables[table]) {
         observable.next(Array.from(this.tables[table].values()))
         
-      } else {
+      } else*/ {
         this.localStorage.getItem(table).pipe().subscribe((accounts) => 
           { 
             this.tables[table] = accounts == null ? new Map<string, any>() : accounts

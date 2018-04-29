@@ -5,7 +5,7 @@ import {
     MatCardModule, MatMenuModule, MatTooltipModule,
     MatDialogModule, MatChipsModule, MatAutocompleteModule, MatFormFieldModule,
     MatInputModule, MatSnackBarModule, MatSlideToggleModule, MatExpansionModule, 
-    MatListModule, MatSelectModule
+    MatListModule, MatSelectModule, MatGridListModule
   } from '@angular/material';
 
 @NgModule ({
@@ -25,7 +25,8 @@ import {
         MatExpansionModule,
         MatSlideToggleModule,
         MatListModule,
-        MatSelectModule],
+        MatSelectModule,
+        MatGridListModule],
     exports: [MatSidenavModule,
         MatToolbarModule,
         MatButtonModule,
@@ -42,7 +43,8 @@ import {
         MatExpansionModule,
         MatSlideToggleModule,
         MatListModule,
-        MatSelectModule]
+        MatSelectModule,
+        MatGridListModule]
 })
 
 export class MaterialModule {}

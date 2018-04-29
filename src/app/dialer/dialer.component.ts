@@ -67,46 +67,32 @@ export class DialerComponent implements OnInit {
 
   @ViewChild('outgoingmedia') set mout(media:any) {
     this.outgoingMedia = media
-    this.updateMedia()
+    
   }
   @ViewChild('incomingmedia') set min(media:any) {
     this.incomingMedia = media
-    this.updateMedia()
+    
   }
-  private incomingSizeSet:boolean = false;
-  updateMedia():void {
-    if (this.outgoingMedia && this.incomingMedia) {
-      if (true) {
-        this.outgoingMedia.nativeElement.addEventListener( "loadedmetadata", function (e) {
-          if (!this.incomingSizeSet) {
-            this.dialogRef.updateSize(540*e.srcElement.videoWidth/e.srcElement.videoHeight + "px", "540px")
-          }
-        }.bind(this), false );
-        this.incomingMedia.nativeElement.addEventListener( "loadedmetadata", function (e) {
-          this.incomingSizeSet = true;
-          this.dialogRef.updateSize(540*e.srcElement.videoWidth/e.srcElement.videoHeight + "px", "540px")
-        }.bind(this), false );
-      }
-    }
-  }
+  
   
   ngOnInit() {
     this.historyModule.getAll().subscribe((history) => {
       let last:String = null
       history.sort((a,b) => {
-        if (a.destination > b.destination) return 1
-        else if (a.destination < b.destination) return -1
+        if (a.destination > b.destination) return -1
+        else if (a.destination < b.destination) return 1
         else return 0
       }).some(((item, index, _arr) => { 
+        
         if (item.destination != last) {
           this.history.push(item)
           last = item.destination
         }
-        return index > 4
+        return this.history.length > 6
       })
     )})
-    if (this.outgoing && this.initiating) {
-      this.onCall()
+    if (this.outgoing && this.initiating) {   
+      setTimeout(() => this.zone.run(() => {this.onCall()}), 10);
     }
   }
 
@@ -128,17 +114,17 @@ export class DialerComponent implements OnInit {
     }
     
     this.call.callEvents().subscribe((state) => this.handleCallEvent(state))
-    let history:History = { 
-                  id:null, 
-                  destination:this.numberCtrl.value, 
-                  type:type, 
-                  timestamp:new Date(), 
-                  outgoing:this.outgoing,
-                  callState:CallState.Initiating, 
-                  sessionType:SessionType.Call
-                }
-    this.historyModule.set(history).subscribe()
+    this.historyModule.set({ 
+      id:null, 
+      destination:this.numberCtrl.value, 
+      type:type, 
+      timestamp:new Date(), 
+      outgoing:this.outgoing,
+      callState:CallState.Initiating, 
+      sessionType:SessionType.Call
+    }).subscribe()
   }
+
   onCall():void {
     if (this.call) {
       this.call.answer();
@@ -155,7 +141,11 @@ export class DialerComponent implements OnInit {
       }
     }
   }
-  
+  updateSize(size:{width:number, height:number}):void {
+    if (size != null) {
+      this.dialogRef.updateSize(540*size.width/size.height + "px", "540px")
+    }     
+  }
   handleCallEvent(state:string):void{
     this.zone.run(() => {
       this.initiating = false;
@@ -164,17 +154,16 @@ export class DialerComponent implements OnInit {
         this.call = null;
         setTimeout(() => this.zone.run(() => {if (this.call == null) this.dialogRef.close()}), 3000);
         this.incall = false;
-        this.incomingSizeSet = false;
       }
-      else if (state == "mediastream") {
-        this.call.getLocalMedia().setElement(this.outgoingMedia.nativeElement)
+      else if (state == "onlocalmedia") {
+        this.call.getLocalMedia().setElement(this.outgoingMedia.nativeElement).subscribe((size) => this.updateSize(size))
       }
-      else if (state == "established") {
-        this.call.getRemoteMedia().setElement(this.incomingMedia.nativeElement)
+      else if (state == "onremotemedia") {
+        this.call.getRemoteMedia().setElement(this.incomingMedia.nativeElement).subscribe((size) => this.updateSize(size))
         
       }
       else if (state == "incoming") {
-        setTimeout(() => this.zone.run(() => {this.call.answer()}), 1000);
+        //setTimeout(() => this.zone.run(() => {this.call.answer()}), 1000);
       }
       if (this.icon[state]) {
         this.callIcon = this.icon[state].icon

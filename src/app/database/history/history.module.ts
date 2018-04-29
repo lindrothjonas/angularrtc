@@ -39,6 +39,12 @@ export class HistoryModule {
     else return 0
   }
 
+  private compareContacts(a:History, b:History, desc:boolean):number {
+    if (a.timestamp > b.timestamp) return desc ? -1 : 1
+    else if (a.timestamp < b.timestamp) return desc ? 1 : -1
+    else return 0
+  }
+
   public set(account:History):Observable<any> {
     return this.accountService.set(this.table, account);
   }
@@ -59,8 +65,38 @@ export class HistoryModule {
     return this.accountService.getData(this.table)
   }
 
+  
+
+  public getContacts():Observable<History[]> { 
+    return new Observable((observer) => {
+      
+      this.getData().subscribe((history) => {
+        let last:String = null
+        let contacts:Array<History> = new Array<History>()
+        history.sort((a,b) => {
+          if (a.destination > b.destination) return -1
+          else if (a.destination < b.destination) return 1
+          else return a.timestamp > b.timestamp ? -1 : 1
+        }).some(((item, index, _arr) => { 
+            if (item.destination != last) {
+              contacts.push(item)
+              last = item.destination
+            }
+            return false
+          })
+        )
+        observer.next(contacts.sort((a,b) => { return this.compare(a, b, true)}))
+      })
+    })
+  }
+
   public getSortedData():Observable<History[]> {
-    return this.sorted
+    return new Observable((observer) => {
+        this.getData().subscribe((history) => {
+        observer.next(history.sort((a,b) => { return this.compare(a, b, true)}))
+      })
+    })
+    
   }
 
   /*public getGroupededData():Observable<Map<String, History[]>> {

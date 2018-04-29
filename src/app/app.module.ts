@@ -19,6 +19,7 @@ import { DialerComponent } from './dialer/dialer.component';
 import { CallingService } from './services/calling.service';
 import { AccountModule } from './database/account/account.module';
 import { HistoryModule } from './database/history/history.module';
+import { ContactListComponent } from './contact-list/contact-list.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,9 @@ import { HistoryModule } from './database/history/history.module';
     MessageComponent,
     TestComponent,
     AccountSettingsComponent,
-    DialerComponent
+    DialerComponent,
+    ContactListComponent,
+    
   ],
   imports: [
     BrowserModule,
@@ -40,10 +43,14 @@ import { HistoryModule } from './database/history/history.module';
     AsyncLocalStorageModule,
     RouterModule.forRoot([{
       path: '',
-      component: AppComponent
-  },
-])
+      component: MainlistComponent
+    },
+    {
+      path: 'contacts',
+      component: ContactListComponent
+    }
     
+    ])
   ],
   entryComponents: [
     AccountSettingsComponent,

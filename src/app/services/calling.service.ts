@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SinchService } from '../sinch.service';
 import { Call, CallClient } from '../rtc/sinch/sinch.module'
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
-import { MediaModule, Stream, Audio } from '../rtc/media/media/media.module';
-
+import { Observable, Subject } from 'rxjs';
+import { MediaDevices, Stream, Audio, Track} from 'highwave'
 
 @Injectable()
 export class CallingService {
@@ -12,11 +10,11 @@ export class CallingService {
   private callClient:CallClient
   private ringtone:string
   private progresstone:string
-  private media:MediaModule
+  private media:MediaDevices
   private stream:Stream
   private audioPlayer:Audio 
   constructor(private sinchService:SinchService) { 
-    this.media = new MediaModule()
+    this.media = MediaDevices.Create()
     this.events = new Subject<Call>()
     this.media.getStream(true, true).subscribe((stream) => {
       this.stream = stream
@@ -25,9 +23,9 @@ export class CallingService {
         if (account && account.active) {
           this.callClient = sinchService.getCallClient()
           this.callClient.incomingCallObserver().subscribe((call) => {
-            this.audioPlayer = new Audio()
+            this.audioPlayer = new Audio(this.ringtone)
             this.events.next(call)
-            this.audioPlayer.playSource(this.ringtone, true)
+            this.audioPlayer.play()
             this.handleAudioEvents(call);
           })
         }
@@ -60,8 +58,8 @@ export class CallingService {
             this.audioPlayer.stop()   
         break;
         case "progressing":
-          this.audioPlayer = new Audio();
-          this.audioPlayer.playSource(this.progresstone, true)
+          this.audioPlayer = new Audio(this.progresstone);
+          this.audioPlayer.play(true)
         break
         
       }

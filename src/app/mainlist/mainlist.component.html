@@ -3,7 +3,7 @@
     <mat-list-item class="category-title">
       {{i}}
     </mat-list-item>
-    <mat-list-item style="height:auto;" *ngFor="let hist of history$ | async">
+    <mat-list-item style="height:auto;" *ngFor="let hist of history">
       <app-message style="width:100%;"
         [avatar]="a"
         [destination]="hist.destination"
