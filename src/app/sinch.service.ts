@@ -60,9 +60,9 @@ export class SinchService {
       this.sinch.setUrls(this.accountModule.platforms[account.platform].urls)
     this.sinch.signIn(account.identity, account.secret)
     .then(() => { 
-      //this.sinch.startActiveConnection().then(() => this.activateAccount(account, true).subscribe(() => {
+      this.sinch.startActiveConnection().then(() => this.activateAccount(account, true).subscribe(() => {
         this.events.next(account);
-      //}))
+      }))
     })
     .catch(() =>  {
       this.sinch.register(account.identity, account.secret)
