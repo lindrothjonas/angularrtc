@@ -2,7 +2,12 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Configuration } from './configuration'
 import { Observable ,  Subject } from 'rxjs';
-import { Stream, Media, Video, Audio } from 'highwave';
+import { Track} from '../../rtc/media/track'
+import { Audio } from '../../rtc/media/audio'
+import { Stream } from '../../rtc/media/stream'
+import { Media } from '../../rtc/media/media'
+import { Video } from '../../rtc/media/video'
+import { MediaDevices } from '../../rtc/media/mediadevices'
 
 export declare class SinchClient {
   constructor(config:SinchConfiguration)

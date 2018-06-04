@@ -9,7 +9,7 @@ import { CallingService } from '../services/calling.service';
 import { Call } from '../rtc/sinch/sinch.module';
 import { Observable } from 'rxjs';
 import { HistoryModule, History } from '../database/history/history.module';
-import { Audio } from 'highwave';
+import { Audio } from '../rtc/media/audio';
 
 
 @Component({

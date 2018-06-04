@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { SinchService } from '../sinch.service';
 import { Call, CallClient } from '../rtc/sinch/sinch.module'
 import { Observable, Subject } from 'rxjs';
-import { MediaDevices, Stream, Audio, Track} from 'highwave'
+import { Track} from '../rtc/media/track'
+import { Audio } from '../rtc/media/audio'
+import { Stream } from '../rtc/media/stream'
+import { MediaDevices } from '../rtc/media/mediadevices'
+
 
 @Injectable()
 export class CallingService {
