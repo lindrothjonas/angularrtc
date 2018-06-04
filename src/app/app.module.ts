@@ -20,6 +20,7 @@ import { CallingService } from './services/calling.service';
 import { AccountModule } from './database/account/account.module';
 import { HistoryModule } from './database/history/history.module';
 import { ContactListComponent } from './contact-list/contact-list.component';
+import { ContactComponent } from './contact-list/contact/contact.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,7 @@ import { ContactListComponent } from './contact-list/contact-list.component';
     AccountSettingsComponent,
     DialerComponent,
     ContactListComponent,
-    
+    ContactComponent
   ],
   imports: [
     BrowserModule,

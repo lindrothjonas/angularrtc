@@ -2,8 +2,7 @@ import { NgModule, Injectable } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LocalStorageService } from '../../services/localstorage.service';
 import { Account, AccountType, Configuration, Platform } from '../../rtc/sinch/configuration'
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
+import { Observable ,  Subject } from 'rxjs';
 
 @NgModule({
   imports: [

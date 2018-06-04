@@ -3,13 +3,12 @@ import {MediaMatcher} from '@angular/cdk/layout';
 import {ChangeDetectorRef, ViewChild} from '@angular/core';
 import { Account, AccountType, IAccountUpdated } from '../rtc/sinch/configuration'
 import { startWith, tap, delay } from 'rxjs/operators';
-import { Observable } from 'rxjs/Observable';
+import { Observable ,  BehaviorSubject } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { ENTER } from '@angular/cdk/keycodes';
 import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialog, MatSnackBar } from '@angular/material';
 import { AccountSettingsComponent } from '../account-settings/account-settings.component'
 import { SinchService } from '../sinch.service';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { AccountModule } from '../database/account/account.module';
 
 @Component({
@@ -72,6 +71,11 @@ export class SidenavComponent implements OnInit {
         this.sinchService.start(account.id).subscribe(() => {
           this.account = account
           
+        }, (error) => {
+          this.snackBar.open(error, null, {
+            duration: 10000,
+            horizontalPosition: "left"
+          });
         });
       }
     }
@@ -86,8 +90,9 @@ export class SidenavComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.snackBar.open('Account saved.', null, {
-          duration: 2000
+        this.snackBar.open('Account saved', null, {
+          duration: 2000,
+          horizontalPosition: "left"
         });
         
       }

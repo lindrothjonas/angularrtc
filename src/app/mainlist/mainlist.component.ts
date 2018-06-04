@@ -7,7 +7,7 @@ import { DialerComponent } from '../dialer/dialer.component';
 import { SinchService } from '../sinch.service';
 import { CallingService } from '../services/calling.service';
 import { Call } from '../rtc/sinch/sinch.module';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { HistoryModule, History } from '../database/history/history.module';
 import { Audio } from 'highwave';
 
@@ -68,8 +68,10 @@ export class MainlistComponent implements OnInit {
     this.callDialogOpen = true;
     this.dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.snackBar.open('Account saved.', null, {
-          duration: 2000
+        this.snackBar.open('Account saved!', null, {
+          duration: 2000,
+          horizontalPosition: "left"
+          
         });
         
       }

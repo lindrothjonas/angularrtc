@@ -1,7 +1,11 @@
 <div class="new-message-toolbar" *ngIf="incall" style="height: 105%;overflow:hidden;">
   <video class="largevideoframe" #incomingmedia></video>
   <video class="smallvideoframe" #outgoingmedia muted></video>
-  <div style="height: 130px;"></div>
+  <div style="height: 130px;">
+    <mat-chip-list>
+      
+    </mat-chip-list>
+  </div>
   <mat-dialog-actions>
       <button [class.hide]="(call != null && outgoing) || (call != null && call.getState() == 'ESTABLISHED')"
         mat-fab

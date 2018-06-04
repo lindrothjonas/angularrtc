@@ -9527,9 +9527,9 @@ function Sinch(configObj) {
 	this._progressTimeout = configObj.progressTimeout || 10500;
 
 	this.firefox = false;
-	if(typeof(navigator) !== 'undefined') {
+	/*if(typeof(navigator) !== 'undefined') {
 		this.firefox = (navigator || {userAgent: ''}).userAgent.indexOf("Firefox") > 0; //Used for special signalling in Firefox (TODO: Remove when not needed for Firefox)
-	}
+	}*/
 
 	//Production defaults
 	this._url = { //NOTE: Only have public URL's in this configuration object. These are the defaults. Override as needed.
@@ -10670,7 +10670,7 @@ Call.prototype.mxpAck = function(msgObj) {
 			});
 		}
 
-		if(msgObj.decrypted.bt === 'sdp') { // New app or PSTN
+		//if(msgObj.decrypted.bt === 'sdp') { // New app or PSTN
 			this.processRTCAnswer(msgObj).then(function() {
 				//Iff early media, connect call already at this stage
 				if((msgObj.decrypted.nvps || {}).earlymedia === 'yes') {
@@ -10691,10 +10691,10 @@ Call.prototype.mxpAck = function(msgObj) {
 				}
 
 			}.bind(this)); 
-		}
+		/*}
 		else if(this.callState == CallState.INITIATING) { // Old native
 			this.progress(true);
-		}
+		}*/
 
 	}
 	else {
@@ -10732,15 +10732,15 @@ Call.prototype.processRTCAnswer = function(msgObj) {
 	var deferred = Q.defer();
 
 	if(this.callState != CallState.ENDED) {
-		var sdpObj = msgObj.decrypted.bd;
+		var sdpObj = msgObj.decrypted.bt == "media" ? null : msgObj.decrypted.bd;
 		this.sinch.log(new Notification(0, 2, 'Processing SDP Answer from B', sdpObj));
 
-		var RTCdescription = new SessionDescription(JSON.parse(sdpObj)); 
+        var RTCDescription = sdpObj ? new SessionDescription(JSON.parse(sdpObj)) : null; 
 
 		//If we are on Firefox, we're reusing the original peer connection, no need to create offer and set description of a new peer connection
 		if(this.sinch.firefox) {
 			this.pcMap[msgObj.getSenderId()] = this.offerGeneratorPC; //All clients use same peer connection
-			this.sdpAnswerBuffer[msgObj.getSenderId()] = RTCdescription; //Answer is injected upon JOIN, since all clients use same peer connection
+			this.sdpAnswerBuffer[msgObj.getSenderId()] = RTCDescription; //Answer is injected upon JOIN, since all clients use same peer connection
 			deferred.resolve();
 		}
 		else {
@@ -10751,9 +10751,14 @@ Call.prototype.processRTCAnswer = function(msgObj) {
 				curPc.setLocalDescription(this.outgoingOffer, function() {
 					this.sinch.log(new Notification(1, 2, 'Configured cached outgoing SDP Offer', this.outgoingOffer));
 
-					this.intProcessAnswer(RTCdescription, msgObj.getSenderId()).then(function() {
-						deferred.resolve();
-					});
+					if (RTCDescription) {
+                        this.intProcessAnswer(RTCDescription, msgObj.getSenderId()).then(function() {
+						    deferred.resolve();
+                        });
+                    }
+                    else {
+                        deferred.resolve();
+                    }
 				}.bind(this), function(error) {
 					console.error('Error setting local Description, message: ' + error);
 				});
@@ -10925,6 +10930,29 @@ Call.prototype.injectIce = function(fromInstance, iceCandObj) {
 	this.pcMap[fromInstance].addIceCandidate(new IceCandidate(iceCandObj), function() {}, function() {});
 }
 
+Call.prototype.addRelay = function(fromInstance) {
+    //Include ICE candidates for proxy (set in injectIce method)
+    if(((this.pcMap[fromInstance] || {}).proxyIce || []).length == 0) {
+        console.error('Warning, no proxy configured (2). Will try to add candidate without srflx reference', this.pcMap[fromInstance]);
+        if(this.proxyUrl) {
+            var host_port = this.proxyUrl.split('/')[3].split(':');
+            this.pcMap[fromInstance].proxyIce = this.pcMap[fromInstance].proxyIce || [];
+            this.pcMap[fromInstance].proxyIce.push(new IceCandidate({sdpMid: 'audio', sdpMLI: 0, sdpMLineIndex: 0, candidate: CallHelper.generateIceCandidate(host_port[0], host_port[1])}));
+        }
+        else {
+            console.error('Warning, no proxyUrl configured!');
+        }
+    }
+
+    ((this.pcMap[fromInstance] || {}).proxyIce || []).forEach(function(cur) {
+        this.sinch.log(new Notification(0, 1, 'Adding buffered proxy ICE candidate', cur));
+        this.pcMap[fromInstance].addIceCandidate(cur, function() {
+            this.sinch.log(new Notification(0, 1, 'Successfully added proxy ICE candidate', cur));
+        }.bind(this), function(e) {
+            throw new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, 'Failed to add proxy ICE candidate when processing JOINED', e);
+        })
+    }.bind(this));
+}
 /**
  * Internal: Trigger actions based on MXP JOIN message. Only used internally.
  *
@@ -10943,13 +10971,43 @@ Call.prototype.mxpJoin = function(msgObj) {
 		//TODO: Send 9_error to communicate this error to the race conditionee
 	}
 
-	var fromInstance = msgObj.getSenderId();
-
-	if(this.callState == CallState.INITIATING) {
+    var fromInstance = msgObj.getSenderId();
+    
+    if(this.callState == CallState.INITIATING) {
 		this.sinch.log(new Notification(0, 1, 'JOIN received before ACK. Will cache JOIN to process after ACK.'));
 		this.joinBuffer[fromInstance] = msgObj;
 	}
 	else {
+        Q.fcall(function() {
+            var deferred = Q.defer()
+            if (msgObj.decrypted.bt === "sdp" && this.pcMap[fromInstance] && !this.pcMap[fromInstance].remoteDescription)
+            {
+                var sdp = JSON.parse(msgObj.decrypted.bd);
+                var RTCdescription = new SessionDescription(sdp);
+                if(this.sinch.firefox) {
+                    this.sdpAnswerBuffer[fromInstance] = RTCdescription;
+                }
+                else {
+                    this.pcMap[fromInstance].setRemoteDescription(RTCdescription, function() {
+                        this.sinch.log(new Notification(1, 2, 'Configured incoming SDP Join', sdp));
+                        deferred.resolve();
+                    }.bind(this), function(error) {
+                        setTimeout(function() {
+                            this.setEndCause(CallEndCause.FAILURE);
+                            this.error = new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, error);
+                            this.sinch.mxpCancel(this).fail(function(error) {
+                                throw new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, 'Error sending call Cancel');
+                            });
+                            this.callFailure();
+                        }.bind(this), 2000);
+                        throw new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, 'Error setting remote SDP');
+                    });
+                }
+            } else {
+                deferred.resolve();
+            }    
+            return deferred.promise;
+        }.bind(this)).then(
 		Q.fcall(function() {
 			var deferred = Q.defer();
 			if(this.sinch.firefox && this.sdpAnswerBuffer[fromInstance]) {
@@ -10971,30 +11029,14 @@ Call.prototype.mxpJoin = function(msgObj) {
 			}
 
 			return deferred.promise;
-		}.bind(this)).then(function() {
+		}.bind(this))).then(function() {
 
-			//Include ICE candidates for proxy (set in injectIce method)
-			if(((this.pcMap[fromInstance] || {}).proxyIce || []).length == 0) {
-				console.error('Warning, no proxy configured (1). Will try to add candidate without srflx reference', this.pcMap[fromInstance]);
-				if(this.proxyUrl) {
-					var host_port = this.proxyUrl.split('/')[3].split(':');
-					this.pcMap[fromInstance].proxyIce = this.pcMap[fromInstance].proxyIce || [];
-					this.pcMap[fromInstance].proxyIce.push(new IceCandidate({sdpMid: 'audio', sdpMLI: 0, sdpMLineIndex: 0, candidate: CallHelper.generateIceCandidate(host_port[0], host_port[1])}));					
-				}
-				else {
-					console.error('Warning, no proxyUrl configured!');
-				}
-			}
+            if (this.pcMap[fromInstance]) {
+                this.sinch.log(new Notification(0, 1, 'Remote description:', this));
+                if (!this.pcMap[fromInstance].remoteDescription || !this.pcMap[fromInstance].remoteDescription.sdp.includes("a=candidate:")) 
+                    this.addRelay(fromInstance);
+            }
 
-			((this.pcMap[fromInstance] || {}).proxyIce || []).forEach(function(cur) {
-				this.sinch.log(new Notification(0, 1, 'Adding buffered proxy ICE candidate', cur));
-				this.pcMap[fromInstance].addIceCandidate(cur, function() {
-					this.sinch.log(new Notification(0, 1, 'Successfully added proxy ICE candidate', cur));
-				}.bind(this), function(e) {
-					throw new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, 'Failed to add proxy ICE candidate when processing JOIN', e);
-				})
-			}.bind(this));
-			
 			if(this.callState == CallState.PROGRESSING || this.earlymedia) {
 				this.activeInstance = msgObj.getSenderId();
 
@@ -11050,28 +11092,8 @@ Call.prototype.mxpJoined = function(msgObj) {
 						this.sinch.log(new Notification(0, 1, 'Injected ice from Ice Rx buffert', iceCandObj));
 				}				
 			}
-
-			//Include ICE candidates for proxy (set in injectIce method)
-			if(((this.pcMap[fromInstance] || {}).proxyIce || []).length == 0) {
-				console.error('Warning, no proxy configured (2). Will try to add candidate without srflx reference', this.pcMap[fromInstance]);
-				if(this.proxyUrl) {
-					var host_port = this.proxyUrl.split('/')[3].split(':');
-					this.pcMap[fromInstance].proxyIce = this.pcMap[fromInstance].proxyIce || [];
-					this.pcMap[fromInstance].proxyIce.push(new IceCandidate({sdpMid: 'audio', sdpMLI: 0, sdpMLineIndex: 0, candidate: CallHelper.generateIceCandidate(host_port[0], host_port[1])}));
-				}
-				else {
-					console.error('Warning, no proxyUrl configured!');
-				}
-			}
-
-			((this.pcMap[fromInstance] || {}).proxyIce || []).forEach(function(cur) {
-				this.sinch.log(new Notification(0, 1, 'Adding buffered proxy ICE candidate', cur));
-				this.pcMap[fromInstance].addIceCandidate(cur, function() {
-					this.sinch.log(new Notification(0, 1, 'Successfully added proxy ICE candidate', cur));
-				}.bind(this), function(e) {
-					throw new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, 'Failed to add proxy ICE candidate when processing JOINED', e);
-				})
-			}.bind(this));
+            
+            this.addRelay(fromInstance);
 
 			this.establish();
 		}
@@ -11375,13 +11397,17 @@ Call.prototype.initPC = function(instanceId) {
 			this.sinch.log(new Notification(0, 2, 'Negotiation needed, will generate new offer', e));
 			newPc.createOffer(function(offer) {
 				this.sinch.log(new Notification(1, 2, 'Negotiation needed, offer generated', offer));
-				newPc.setLocalDescription(offer, function() {
+				newPc.setLocalDescription(this.outgoingOffer, function() {
 					this.sinch.log(new Notification(1, 2, 'Negotiation needed, sending offer to recipient', offer));
 					this.sinch.mxp.callTxPeerEventSDP(this, offer, this.activeInstance).fail(function(error) {
 							throw new SinchError(ErrorDomain.ErrorDomainSDK, ErrorCode.SDKInternalOther, 'Error sending SDP Offer');
 						});
-				}.bind(this));
-			}.bind(this));
+				}.bind(this), function(error) {
+                    this.sinch.log(new Notification(0, 2, 'Error setting local description', error));
+                });
+			}.bind(this), function(error) {
+                this.sinch.log(new Notification(0, 2, 'Error generating new offer', error));
+            });
 		}
 	}.bind(this)
 
@@ -11934,9 +11960,9 @@ function CallClient(sinch, customStream) {
 	}
 
 	var userAgent = navigator.userAgent.toLowerCase();
-	if(userAgent.indexOf('msie') > -1 || /Apple Computer/.test(navigator.vendor) || /Edge/.test(userAgent)) {
+	/*if(userAgent.indexOf('msie') > -1 || /Apple Computer/.test(navigator.vendor) || /Edge/.test(userAgent)) {
 		throw new Error('SinchClient can\'t be started with calling capability. Browser not supported.');
-	}
+	}*/
 
 	this.sinch = sinch;
 	this.eventListeners = [];
@@ -15201,7 +15227,10 @@ var MXPCallHandlers = {
 		else {
 			this.sinch.log(new Notification(0, 1, 'Received INVITE message not meant for this instance, nvps.to header set to foreign instance id', msgObj));
 		}	
-	}, //TODO: Implement 2_null for tracking in mxpshark
+    }, //TODO: Implement 2_null for tracking in mxpshark
+    '2_null': function(msgObj) { //Ack - sent when A calls B (old native) and phone is ringing
+		this.sinch.callClient && this.sinch.callClient.callBuffert[msgObj.mxpSessionId] && this.sinch.callClient.callBuffert[msgObj.mxpSessionId].mxpAck(msgObj);
+	},
 	'2_media': function(msgObj) { //Ack - sent when A calls B (old native) and phone is ringing
 		this.sinch.callClient && this.sinch.callClient.callBuffert[msgObj.mxpSessionId] && this.sinch.callClient.callBuffert[msgObj.mxpSessionId].mxpAck(msgObj);
 	},

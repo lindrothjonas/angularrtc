@@ -5,7 +5,7 @@ import { Call } from '../rtc/sinch/sinch.module';
 import { MatChipInputEvent, MAT_DIALOG_DATA, MatAutocompleteSelectedEvent, MatDialogRef } from '@angular/material';
 import { CallingService } from '../services/calling.service';
 import { HistoryModule, History, CallState, SessionType } from '../database/history/history.module';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-dialer',
