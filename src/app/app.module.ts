@@ -21,6 +21,7 @@ import { AccountModule } from './database/account/account.module';
 import { HistoryModule } from './database/history/history.module';
 import { ContactListComponent } from './contact-list/contact-list.component';
 import { ContactComponent } from './contact-list/contact/contact.component';
+import { CallcenterComponent } from './callcenter/callcenter.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { ContactComponent } from './contact-list/contact/contact.component';
     AccountSettingsComponent,
     DialerComponent,
     ContactListComponent,
-    ContactComponent
+    ContactComponent,
+    CallcenterComponent
   ],
   imports: [
     BrowserModule,
@@ -49,6 +51,10 @@ import { ContactComponent } from './contact-list/contact/contact.component';
     {
       path: 'contacts',
       component: ContactListComponent
+    },
+    {
+      path: 'callcenter',
+      component: CallcenterComponent
     }
     
     ])

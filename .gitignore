@@ -8,6 +8,7 @@
 
 # dependencies
 /node_modules
+/callcenter_backend_demo/node_modules
 
 # IDEs and editors
 /.idea

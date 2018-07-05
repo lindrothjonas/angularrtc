@@ -77,11 +77,17 @@ export class CallingService {
   callPhoneNumber(number:string):Observable<Call> {
     return this.call(number, true)
   }
-  private call(destination:string, callNumber:boolean = false):Observable<Call> {
+
+  callConference(conferenceRoom:string):Observable<Call> {
+    return this.call(conferenceRoom, false, true)
+  }
+
+  private call(destination:string, callNumber:boolean = false, callConference:boolean = false):Observable<Call> {
     return new Observable((observer) => {
       if (this.callClient != null) {
-          let call:Call = callNumber ? this.callClient.callPhoneNumber(destination) :
-                                        this.callClient.callUser(destination, null)
+          let call:Call = callConference ? this.callClient.callConference(destination) : 
+            callNumber ? this.callClient.callPhoneNumber(destination) :
+            this.callClient.callUser(destination, null)
           this.handleAudioEvents(call);
           observer.next(call);
          

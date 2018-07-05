@@ -136,8 +136,9 @@ export class DialerComponent implements OnInit {
       
       if (this.numberCtrl.value.substring(0, 1) == "+") {
         this.callingService.callPhoneNumber(this.numberCtrl.value).subscribe((call) => this.callStarted(call, "pstn"))
-      } else {
-        this.callingService.callUser(this.numberCtrl.value).subscribe((call) => this.callStarted(call, "user"))
+      } else { // TODO: Support both callUser and callConference
+        this.callingService.callConference(this.numberCtrl.value).subscribe((call) => this.callStarted(call, "user"))
+//        this.callingService.callPhoneNumber("+555123123").subscribe((call) => this.callStarted(call, "user"))
       }
     }
   }
@@ -156,7 +157,7 @@ export class DialerComponent implements OnInit {
         this.incall = false;
       }
       else if (state == "onlocalmedia") {
-        this.call.getLocalMedia().setElement(this.outgoingMedia.nativeElement).subscribe((size) => this.updateSize(size))
+        //this.call.getLocalMedia().setElement(this.outgoingMedia.nativeElement).subscribe((size) => this.updateSize(size))
       }
       else if (state == "onremotemedia") {
         this.call.getRemoteMedia().setElement(this.incomingMedia.nativeElement).subscribe((size) => this.updateSize(size))

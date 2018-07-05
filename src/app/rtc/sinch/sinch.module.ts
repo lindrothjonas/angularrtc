@@ -115,12 +115,17 @@ export class CallClient {
   constructor(private callClient:any) {
     
   }
+  
   callPhoneNumber(number:string, stream:Stream = null):Call {
     return new Call(this.callClient.callPhoneNumber(number, undefined, stream != null && stream.stream != null ? stream.stream : undefined), stream != null);
   }
 
   callUser(user:string, headers:any = null, stream:Stream = null):Call {
     return new Call(this.callClient.callUser(user, headers, stream != null && stream.stream != null ? stream.stream : undefined), stream != null);
+  }
+
+  callConference(conferenceRoom:string, headers:any = null, stream:Stream = null):Call {
+    return new Call(this.callClient.callConference(conferenceRoom, headers, stream != null && stream.stream != null ? stream.stream : undefined), stream != null);
   }
 
   incomingCallObserver():Observable<Call> {

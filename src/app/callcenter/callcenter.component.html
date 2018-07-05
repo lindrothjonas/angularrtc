@@ -1,0 +1,28 @@
+<content style="display:flex;height:500px; width: 95%;justify-content: space-evenly;">
+  <div style="flex-grow: 2">
+    <mat-list>
+
+      <mat-list-item style="height:auto;" *ngFor="let call of callcenterService.availableCalls">
+        <app-message style="width:100%;"
+          [avatar]="a"
+          [destination]="call.confId"
+          [recieved]="call.timestamp"
+          [subject]="call.fromCli"
+          (call)="onCall($event)"
+          >
+        </app-message>
+
+        <!--<app-message style="width:100%;"
+          [avatar]="a"
+          [destination]="hist.destination"
+          [outgoing]="hist.outgoing"
+          [recieved]="hist.timestamp"
+          [id]="hist.id"
+          (call)="onCall($event)"
+          (removed)="onRemoved($event)"
+          (reply)="onNewMessage($event)">
+        </app-message>-->
+      </mat-list-item>
+    </mat-list>
+  </div>
+</content>
